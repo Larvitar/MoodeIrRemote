@@ -1,0 +1,24 @@
+{
+  "power": {
+    "global": {
+      "target": "shell",
+      "command": "sudo shutdown now"
+    }
+  },
+  "ok": {
+    "mpd": {
+      "target": "shell",
+      "command": "mpc toggle"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "toggle"
+    }
+  },
+  "source": {
+    "global": {
+      "target": "moode",
+      "command": "force_mpd"
+    }
+  }
+}
