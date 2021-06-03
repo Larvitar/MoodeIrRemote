@@ -80,4 +80,4 @@ Possible targets are: <code>bluetooth</code>, <code>spotify</code>, <code>moode<
 
 **Note:** Only one command can be run at the same time. <code>global</code> will be run only if active player does not match any other command.
 
-See [commands](commands\README.md).
+See [commands](commands/README.md).
