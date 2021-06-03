@@ -17,7 +17,6 @@ Configuration is stored in <code>config.json</code>
       "remotes": [],            # List of remote controllers that will be loaded on startup
       "ir_gpio_pin":  24,       # GPIO pin where IR receiver is attached
       "spotify": {  # Spotify configuration
-        "device_name": "Moode Spotify",
         "client_id": "",
         "client_secret": "",
         "redirect_uri": "http://moode.local:8888/auth",
