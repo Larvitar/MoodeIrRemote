@@ -47,6 +47,8 @@ class MoodeHandler(BaseActionHandler):
     def call(self, command_dict):
         command = command_dict['command']
         current_status = self._read_mpd_status()
+        if self.get_active_renderer() != 'moode':
+            requests.get(self.base_url + 'moode.php?cmd=disconnect-renderer')   # Make sure nothing else is playing
 
         response = None
         # Worker commands
