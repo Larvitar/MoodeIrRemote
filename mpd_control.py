@@ -40,18 +40,18 @@ class IrHandler(object):
         self.keymap: Dict[str, List] = dict()
         self.commands: Dict[str, Dict] = dict()
 
-        self.handlers: Dict[str, BaseActionHandler] = {
-            'shell': ShellCommandsHandler(),
-            'spotify': SpotifyHandler(config=self.config.spotify),
-            'moode': MoodeHandler(),
-            'bluetooth': BluetoothHandler()
-        }
-        self.moode_handler: MoodeHandler = MoodeHandler()
+        if not self.test_mode:
+            self.handlers: Dict[str, BaseActionHandler] = {
+                'shell': ShellCommandsHandler(),
+                'spotify': SpotifyHandler(config=self.config.spotify),
+                'moode': MoodeHandler(),
+                'bluetooth': BluetoothHandler()
+            }
 
         self.load_commands()
 
     def call(self, action: dict):
-        renderer = self.moode_handler.get_active_renderer()
+        renderer = MoodeHandler().get_active_renderer()
         if renderer in action.keys():
             commands = action[renderer]
         elif 'global' in action.keys():
