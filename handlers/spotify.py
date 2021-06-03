@@ -1,5 +1,6 @@
 from handlers.base_handler import BaseActionHandler
 from handlers.spotify_auth import AuthServer
+from handlers.moode import MoodeHandler
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
 from time import time, sleep
@@ -48,7 +49,7 @@ class SpotifyHandler(BaseActionHandler):
     def __init__(self, config: Dict):
         self.device_id = None
 
-        if {'device_name', 'client_id', 'client_secret', 'redirect_uri', 'listen_ip'} <= config.keys() or \
+        if {'client_id', 'client_secret', 'redirect_uri', 'listen_ip'} <= config.keys() or \
                 False in [bool(value) for value in config.values()]:
             print('ERROR')
             return
@@ -65,7 +66,8 @@ class SpotifyHandler(BaseActionHandler):
         self.spotify = Spotify(auth_manager=self.spotify_auth)
 
         try:
-            self.device_id = self._get_id(config['device_name'])
+            device_name = MoodeHandler().read_cfg_system()['spotifyname']
+            self.device_id = self._get_id(device_name)
         except TimeoutError as e:
             print(e)
 

@@ -2,7 +2,6 @@
   "remotes": [],
   "ir_gpio_pin":  24,
   "spotify": {
-    "device_name": "Moode Spotify",
     "redirect_uri": "http://moode.local:8888/auth",
     "client_id": "",
     "client_secret": "",

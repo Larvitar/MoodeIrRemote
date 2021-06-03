@@ -20,7 +20,7 @@ class MoodeHandler(BaseActionHandler):
         }
 
     def get_active_renderer(self) -> Optional[str]:
-        sys_config = self._read_cfg_system()
+        sys_config = self.read_cfg_system()
 
         for config_name, player in self.renderers.items():
             if config_name in sys_config and int(sys_config[config_name]) == 1:
@@ -28,7 +28,7 @@ class MoodeHandler(BaseActionHandler):
 
         return 'moode'
 
-    def _read_cfg_system(self):
+    def read_cfg_system(self):
         response = requests.get(self.base_url + 'moode.php?cmd=readcfgsystem')
         return eval(response.content.decode('utf-8'))
 
@@ -93,5 +93,12 @@ class MoodeHandler(BaseActionHandler):
         elif command == 'radio':
             response = requests.post(self.base_url + 'moode.php?cmd=clear_play_item',
                                      data={'path': 'RADIO/' + command_dict['value']})
+
+        elif command == 'custom':
+            # Allow for any other command as defined by user
+            if 'data' in command_dict:
+                response = requests.post(self.base_url + command_dict['value'], data=command_dict['data'])
+            else:
+                response = requests.post(self.base_url + command_dict['value'])
 
         print(f'{response.status_code}: {response.content}')
