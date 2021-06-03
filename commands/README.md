@@ -34,6 +34,23 @@ Possible targets are: <code>bluetooth</code>, <code>spotify</code>, <code>moode<
 
 **Note:** Only one command can be run at the same time. <code>global</code> will be run only if active player does not match any other command.
 
+### Command lists
+Command lists are also supported so you can run multiple commands at one button click:
+
+      "red": {
+        "global": [
+          {
+            "target": "shell",
+            "command": "echo \"some command\""
+          },
+          {
+            "target": "moode",
+            "command": "radio",
+            "value": "RTR Radio"
+          }
+        ]
+      }
+
 # Shell
 You can run basically any shell command. List of commands are also supported:
 

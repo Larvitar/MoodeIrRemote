@@ -54,26 +54,31 @@ class IrHandler(object):
     def call(self, action: dict):
         renderer = self.moode_handler.get_active_renderer()
         if renderer in action.keys():
-            command_dict = action[renderer]
+            commands = action[renderer]
         elif 'global' in action.keys():
-            command_dict = action['global']
+            commands = action['global']
         else:
             return
 
-        if renderer == 'bluetooth' and command_dict['target'] != renderer:
-            # It is not possible to disconnect BT server side, so only allow BT commands when BT is playing.
-            return
+        if not isinstance(commands, list):
+            commands = [commands]
 
-        if command_dict['target'] in self.handlers:
-            handler = self.handlers[command_dict['target']]
-        else:
-            return
+        for command_dict in commands:
 
-        try:
-            handler.call(command_dict)
-        except Exception as e:
-            # Do not fail script on exception
-            print(e)
+            if renderer == 'bluetooth' and command_dict['target'] != renderer:
+                # It is not possible to disconnect BT server side, so only allow BT commands when BT is playing.
+                return
+
+            if command_dict['target'] in self.handlers:
+                handler = self.handlers[command_dict['target']]
+            else:
+                return
+
+            try:
+                handler.call(command_dict)
+            except Exception as e:
+                # Do not fail script on exception
+                print(e)
 
     @staticmethod
     def clear_keymap():
