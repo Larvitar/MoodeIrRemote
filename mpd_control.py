@@ -1,6 +1,7 @@
 from handlers.base_handler import BaseActionHandler
 from handlers.shell import ShellCommandsHandler
 from handlers.spotify import SpotifyHandler
+from handlers.moode import MoodeHandler
 from piir.io import receive
 from piir.decode import decode
 from pprint import pformat
@@ -46,8 +47,10 @@ class IrHandler(object):
                                       client_secret=self.config.spotify['client_secret'],
                                       redirect_uri=self.config.spotify['redirect_uri'],
                                       listen_ip=self.config.spotify['auth_server_listen_ip'],
-                                      listen_port=self.config.spotify['auth_server_listen_port'])
+                                      listen_port=self.config.spotify['auth_server_listen_port']),
+            'moode': MoodeHandler()
         }
+        self.moode_handler: MoodeHandler = MoodeHandler()
 
         self.load_commands()
 
@@ -55,8 +58,7 @@ class IrHandler(object):
         if 'global' in action.keys() and len(action) == 1:
             command_dict = action['global']
         else:
-            # TODO: Read current renderer
-            renderer = None
+            renderer = self.moode_handler.get_active_renderer()
             if renderer in action.keys():
                 command_dict = action[renderer]
             elif 'global' in action.keys():
