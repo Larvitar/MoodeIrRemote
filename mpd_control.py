@@ -2,6 +2,7 @@ from handlers.base_handler import BaseActionHandler
 from handlers.shell import ShellCommandsHandler
 from handlers.spotify import SpotifyHandler
 from handlers.moode import MoodeHandler
+from handlers.bluetooth import BluetoothHandler
 from piir.io import receive
 from piir.decode import decode
 from pprint import pformat
@@ -43,7 +44,8 @@ class IrHandler(object):
         self.handlers: Dict[str, BaseActionHandler] = {
             'shell': ShellCommandsHandler(),
             'spotify': SpotifyHandler(config=self.config.spotify),
-            'moode': MoodeHandler()
+            'moode': MoodeHandler(),
+            'bluetooth': BluetoothHandler()
         }
         self.moode_handler: MoodeHandler = MoodeHandler()
 
@@ -56,6 +58,10 @@ class IrHandler(object):
         elif 'global' in action.keys():
             command_dict = action['global']
         else:
+            return
+
+        if renderer == 'bluetooth' and command_dict['target'] != renderer:
+            # It is not possible to disconnect BT server side, so only allow BT commands when BT is playing.
             return
 
         if command_dict['target'] in self.handlers:

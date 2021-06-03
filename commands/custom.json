@@ -6,13 +6,13 @@
     }
   },
   "1": {
-    "global": {
+    "moode": {
       "target": "shell",
       "command": ["mpc clear", "mpc load \"Fate Series OST\"", "mpc play"]
     }
   },
   "2": {
-    "global": {
+    "moode": {
       "target": "shell",
       "command": ["mpc clear", "mpc add \"http://91.232.4.33:7028/Stream1\"", "mpc play"]
     }

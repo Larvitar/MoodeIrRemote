@@ -65,6 +65,11 @@
       "target": "spotify",
       "command": "vol_up",
       "value": 2
+    },
+    "bluetooth": {
+      "target": "bluetooth",
+      "command": "vol_up",
+      "value": 2
     }
   },
   "vol_dn": {
@@ -77,6 +82,11 @@
       "target": "spotify",
       "command": "vol_dn",
       "value": 2
+    },
+    "bluetooth": {
+      "target": "bluetooth",
+      "command": "vol_dn",
+      "value": 2
     }
   },
   "mute": {
@@ -86,6 +96,10 @@
     },
     "spotify": {
       "target": "spotify",
+      "command": "mute"
+    },
+    "bluetooth": {
+      "target": "bluetooth",
       "command": "mute"
     }
   },
