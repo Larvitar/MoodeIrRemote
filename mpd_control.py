@@ -42,12 +42,7 @@ class IrHandler(object):
 
         self.handlers: Dict[str, BaseActionHandler] = {
             'shell': ShellCommandsHandler(),
-            'spotify': SpotifyHandler(device_name=self.config.spotify['device_name'],
-                                      client_id=self.config.spotify['client_id'],
-                                      client_secret=self.config.spotify['client_secret'],
-                                      redirect_uri=self.config.spotify['redirect_uri'],
-                                      listen_ip=self.config.spotify['auth_server_listen_ip'],
-                                      listen_port=self.config.spotify['auth_server_listen_port']),
+            'spotify': SpotifyHandler(config=self.config.spotify),
             'moode': MoodeHandler()
         }
         self.moode_handler: MoodeHandler = MoodeHandler()
@@ -55,16 +50,13 @@ class IrHandler(object):
         self.load_commands()
 
     def call(self, action: dict):
-        if 'global' in action.keys() and len(action) == 1:
+        renderer = self.moode_handler.get_active_renderer()
+        if renderer in action.keys():
+            command_dict = action[renderer]
+        elif 'global' in action.keys():
             command_dict = action['global']
         else:
-            renderer = self.moode_handler.get_active_renderer()
-            if renderer in action.keys():
-                command_dict = action[renderer]
-            elif 'global' in action.keys():
-                command_dict = action['global']
-            else:
-                return
+            return
 
         if command_dict['target'] in self.handlers:
             handler = self.handlers[command_dict['target']]

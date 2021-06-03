@@ -1,8 +1,9 @@
 from handlers.base_handler import BaseActionHandler
+from handlers.spotify_auth import AuthServer
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
-from handlers.spotify_auth import AuthServer
 from time import time, sleep
+from typing import Dict
 
 
 SCOPE = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing',
@@ -40,47 +41,56 @@ class AuthHandler(SpotifyOAuth):
 class SpotifyHandler(BaseActionHandler):
 
     # List of commands allowed in inactive mode
-    allowed_inactive = ['playlist']
+    allowed_inactive = ['playlist', 'album']
     # List of command that require a value
-    require_value = ['seek', 'playlist', 'album']
+    require_value = ['vol_up', 'vol_dn', 'seek', 'playlist', 'album']
 
-    def __init__(self, device_name, client_id, client_secret, redirect_uri, listen_ip, listen_port):
+    def __init__(self, config: Dict):
         self.device_id = None
 
-        if not device_name or not client_id or not client_secret or not redirect_uri or not listen_ip \
-                or not listen_port:
+        if {'device_name', 'client_id', 'client_secret', 'redirect_uri', 'listen_ip'} <= config.keys() or \
+                False in [bool(value) for value in config.values()]:
+            print('ERROR')
             return
 
         self.spotify_auth = AuthHandler(
-            listen_ip=listen_ip,
-            listen_port=listen_port,
-            client_id=client_id,
-            client_secret=client_secret,
-            redirect_uri=redirect_uri,
+            listen_ip=config['auth_server_listen_ip'],
+            listen_port=config['auth_server_listen_port'],
+            client_id=config['client_id'],
+            client_secret=config['client_secret'],
+            redirect_uri=config['redirect_uri'],
             scope=SCOPE
         )
 
         self.spotify = Spotify(auth_manager=self.spotify_auth)
 
         try:
-            self.device_id = self._get_id(device_name)
+            self.device_id = self._get_id(config['device_name'])
         except TimeoutError as e:
             print(e)
 
         self.spotify_auth.initiated = True
         self.last_volume = 0
 
+    def verify(self, command_dict):
+        assert 'command' in command_dict
+        assert isinstance(command_dict['command'], str)
+
+        if command_dict['command'] in self.require_value:
+            assert 'value' in command_dict
+            assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int)
+
     def call(self, command_dict):
+        command = command_dict['command']
+
         if not self.device_id:
             # Spotify was not authenticated
             return
 
-        device_status = self._get_device()
+        device_status = self._get_device_status()
         if not device_status:
             print('ERROR')
             return
-
-        command = command_dict['command']
 
         if not device_status['is_active'] and command not in self.allowed_inactive:
             return
@@ -101,7 +111,7 @@ class SpotifyHandler(BaseActionHandler):
                 self.spotify.transfer_playback(self.device_id)
         elif command == 'next':
             self.spotify.next_track(self.device_id)
-        elif command == 'prev':
+        elif command == 'previous':
             self.spotify.previous_track(self.device_id)
         elif command == 'shuffle':
             self.spotify.shuffle(not current['shuffle_state'], self.device_id)
@@ -129,19 +139,27 @@ class SpotifyHandler(BaseActionHandler):
             if playlist_uri:
                 self.spotify.start_playback(self.device_id, playlist_uri)
         elif command == 'album':
-            album_uri = self._find_playlist(command_dict['value'])
+            album_uri = self._find_user_saved_album(command_dict['value'])
             if album_uri:
                 self.spotify.start_playback(self.device_id, album_uri)
 
     def _get_id(self, device_name):
-        for device in self.spotify.devices()['devices']:
+        response = self.spotify.devices()
+        if 'devices' not in response:
+            return None
+
+        for device in response['devices']:
             if device['name'] == device_name:
                 return device['id']
 
         return None
 
-    def _get_device(self):
-        for device in self.spotify.devices()['devices']:
+    def _get_device_status(self):
+        response = self.spotify.devices()
+        if 'devices' not in response:
+            return None
+
+        for device in response['devices']:
             if device['id'] == self.device_id:
                 return device
         return None

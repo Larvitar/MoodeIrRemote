@@ -1,40 +1,32 @@
-from typing import Optional
 from handlers.base_handler import BaseActionHandler
+from typing import Optional
 import requests
-import sqlite3
 
 
 class MoodeHandler(BaseActionHandler):
 
+    # List of command that require a value
+    require_value = ['vol_up', 'vol_dn', 'playlist', 'radio']
+
     def __init__(self):
-        self.db_path = '/var/local/www/db/moode-sqlite3.db'
         self.base_url = 'http://localhost/command/'
-        self.name_map = {
+        self.renderers = {
+            'rbactive': 'roonbridge',
+            'aplactive': 'airplay',
+            'btactive': 'bluetooth',
+            'slactive': 'squeezelite',
             'spotactive': 'spotify',
-            'btactive': 'bluetooth'
+            'inpactive': 'input'
         }
 
     def get_active_renderer(self) -> Optional[str]:
-        # TODO: Check if file is accessible
-        conn = sqlite3.connect(self.db_path)
-        records = conn.execute("SELECT param, value FROM cfg_system WHERE param IN ('rbactive', 'aplactive',"
-                               " 'btactive', 'slactive', 'spotactive', 'inpactive')")
-        players = dict(records)
-        conn.close()
+        sys_config = self._read_cfg_system()
 
-        for player, value in players:
-            if int(value):
-                if player in self.name_map:
-                    return self.name_map[player]
-                else:
-                    return player
+        for config_name, player in self.renderers.items():
+            if config_name in sys_config and int(sys_config[config_name]) == 1:
+                return player
 
         return 'moode'
-
-    def _set_to_db(self, table, param, value):
-        conn = sqlite3.connect(self.db_path)
-        conn.execute(f"UPDATE {table} SET value='{value}' WHERE param='{param}")
-        conn.close()
 
     def _read_cfg_system(self):
         response = requests.get(self.base_url + 'moode.php?cmd=readcfgsystem')
@@ -44,11 +36,17 @@ class MoodeHandler(BaseActionHandler):
         response = requests.get(self.base_url + 'moode.php?cmd=getmpdstatus')
         return eval(response.content.decode('utf-8'))
 
+    def verify(self, command_dict):
+        assert 'command' in command_dict
+        assert isinstance(command_dict['command'], str)
+
+        if command_dict['command'] in self.require_value:
+            assert 'value' in command_dict
+            assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int)
+
     def call(self, command_dict):
         command = command_dict['command']
-        current_config = self._read_cfg_system()
         current_status = self._read_mpd_status()
-        # active_renderer = self.get_active_renderer()
 
         response = None
         # Worker commands
@@ -94,4 +92,4 @@ class MoodeHandler(BaseActionHandler):
             response = requests.post(self.base_url + 'moode.php?cmd=clear_play_item',
                                      data={'path': 'RADIO/' + command_dict['value']})
 
-        print(response)
+        print(f'{response.status_code}: {response.content}')

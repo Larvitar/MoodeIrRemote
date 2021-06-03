@@ -9,8 +9,8 @@ class BaseActionHandler(ABC):
             cls._instance = cls.__new__(cls)
         return cls._instance
 
-    def call(self, command):
+    def call(self, command_dict):
         return NotImplementedError
 
-    def verify(self, command):
+    def verify(self, command_dict):
         return NotImplementedError

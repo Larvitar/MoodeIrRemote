@@ -52,7 +52,7 @@
     },
     "spotify": {
       "target": "spotify",
-      "command": "prev"
+      "command": "previous"
     }
   },
   "vol_up": {
