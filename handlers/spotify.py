@@ -66,8 +66,8 @@ class SpotifyHandler(BaseActionHandler):
         self.spotify = Spotify(auth_manager=self.spotify_auth)
 
         try:
-            device_name = MoodeHandler().read_cfg_system()['spotifyname']
-            self.device_id = self._get_id(device_name)
+            self.device_name = MoodeHandler().read_cfg_system()['spotifyname']
+            self.device_id = self._get_id(self.device_name)
         except TimeoutError as e:
             print(e)
 
@@ -86,6 +86,12 @@ class SpotifyHandler(BaseActionHandler):
 
     def call(self, command_dict):
         command = command_dict['command']
+
+        device_name = MoodeHandler().read_cfg_system()['spotifyname']
+        if device_name != self.device_name:
+            self.device_name = device_name
+            self.device_id = None
+            self.device_id = self._get_id(self.device_name)
 
         if not self.device_id:
             # Spotify was not authenticated
