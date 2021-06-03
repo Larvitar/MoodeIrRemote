@@ -1,8 +1,6 @@
 from typing import List, Dict
 from handlers.base_handler import BaseActionHandler
 import subprocess
-import traceback
-import sys
 
 
 class ShellCommandsHandler(BaseActionHandler):
@@ -18,18 +16,13 @@ class ShellCommandsHandler(BaseActionHandler):
             subprocess.run(parsed)
 
     def verify(self, command_dict):
-        try:
-            command = command_dict['command']
+        command = command_dict['command']
 
-            if not isinstance(command, list):
-                command = [command]
+        if not isinstance(command, list):
+            command = [command]
 
-            for _command in command:
-                self._parse_command(_command)
-        except Exception as e:
-            error = f'Error while parsing "{command_dict}"'
-            error += '\n' + traceback.format_exc(e)
-            sys.exit(1)
+        for _command in command:
+            self._parse_command(_command)
 
     @staticmethod
     def _parse_command(command: str) -> List[str]:

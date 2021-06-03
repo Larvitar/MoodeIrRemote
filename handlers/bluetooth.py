@@ -5,6 +5,9 @@ from re import search
 
 class BluetoothHandler(BaseActionHandler):
 
+    # List of command that require a value
+    require_value = ['vol_up', 'vol_dn']
+
     def __init__(self):
         self.last_volume = 0
 
@@ -25,6 +28,16 @@ class BluetoothHandler(BaseActionHandler):
     @staticmethod
     def _send_amixer_command(ctype, device_name, command):
         run(['amixer', '-D', 'bluealsa', ctype, device_name, command])
+
+    def verify(self, command_dict):
+        assert 'command' in command_dict, f'\'command\' missing from {command_dict}'
+        assert isinstance(command_dict['command'], str), f'\'{command_dict["command"]}\' ' \
+                                                         f'type({type(command_dict["command"])}) value is not allowed!'
+
+        if command_dict['command'] in self.require_value:
+            assert 'value' in command_dict, f'\'value\' missing from {command_dict}'
+            assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int), \
+                f'\'{command_dict["command"]}\' type({type(command_dict["command"])}) value is not allowed!'
 
     def call(self, command_dict):
         command = command_dict['command']

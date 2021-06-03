@@ -25,9 +25,8 @@ class Config(object):
             for key, value in config.items():
                 setattr(self, key, value)
 
-        self.remotes.append('default.json')
-
-    # TODO: Verify config
+        if 'default.json' not in self.remotes:
+            self.remotes.append('default.json')
 
 
 class IrHandler(object):
@@ -65,20 +64,26 @@ class IrHandler(object):
 
         for command_dict in commands:
 
-            if renderer == 'bluetooth' and command_dict['target'] != renderer:
+            if renderer in ['bluetooth'] and command_dict['target'] != renderer:
                 # It is not possible to disconnect BT server side, so only allow BT commands when BT is playing.
                 return
 
             if command_dict['target'] in self.handlers:
                 handler = self.handlers[command_dict['target']]
-            else:
-                return
+                try:
+                    handler.call(command_dict)
+                except Exception as e:
+                    # Do not fail script on exception
+                    print(e)
 
-            try:
-                handler.call(command_dict)
-            except Exception as e:
-                # Do not fail script on exception
-                print(e)
+    def verify_commands(self):
+
+        for command_dict in self.commands.values():
+            for command in command_dict.values():
+                assert 'target' in command, f'\'target\' missing from {command_dict}'
+                if command_dict['target'] in self.handlers:
+                    handler = self.handlers[command_dict['target']]
+                    handler.verify(command_dict)
 
     @staticmethod
     def clear_keymap():
@@ -164,17 +169,18 @@ class IrHandler(object):
 
             if self.test_mode:
                 print(f'Code "{code}" received.')
-            try:
-                key_name = None
-                for _key, _codes in self.keymap.items():
-                    if code in _codes:
-                        key_name = _key
+            else:
+                try:
+                    key_name = None
+                    for _key, _codes in self.keymap.items():
+                        if code in _codes:
+                            key_name = _key
 
-                command = self.commands[key_name]
-            except KeyError:
-                continue
+                    command = self.commands[key_name]
+                except KeyError:
+                    continue
 
-            self.call(command)
+                self.call(command)
 
 
 if __name__ == '__main__':
@@ -192,4 +198,5 @@ if __name__ == '__main__':
     if 'setup' or 'clear' in sys.argv[1:]:
         sys.exit()
 
+    ir_handler.verify_commands()
     ir_handler.monitor()

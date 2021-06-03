@@ -75,12 +75,14 @@ class SpotifyHandler(BaseActionHandler):
         self.last_volume = 0
 
     def verify(self, command_dict):
-        assert 'command' in command_dict
-        assert isinstance(command_dict['command'], str)
+        assert 'command' in command_dict, f'\'command\' missing from {command_dict}'
+        assert isinstance(command_dict['command'], str), f'\'{command_dict["command"]}\' ' \
+                                                         f'type({type(command_dict["command"])}) value is not allowed!'
 
         if command_dict['command'] in self.require_value:
-            assert 'value' in command_dict
-            assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int)
+            assert 'value' in command_dict, f'\'value\' missing from {command_dict}'
+            assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int), \
+                f'\'{command_dict["command"]}\' type({type(command_dict["command"])}) value is not allowed!'
 
     def call(self, command_dict):
         command = command_dict['command']
