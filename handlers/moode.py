@@ -79,6 +79,8 @@ class MoodeHandler(BaseActionHandler):
             response = requests.get(self.base_url + 'index.php?cmd=repeat+{value}'.format(value=repeat))
         elif command == 'disconnect-renderer':
             response = requests.get(self.base_url + 'moode.php?cmd=disconnect-renderer')
+        elif command == 'mute':
+            response = requests.get(self.base_url + '?cmd=vol.sh+mute')
 
         # Commands with values
         elif command == 'vol_up':

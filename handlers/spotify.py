@@ -109,11 +109,6 @@ class SpotifyHandler(BaseActionHandler):
             repeat_values = ["track", "context", "off"]
             new = (repeat_values.index(current['repeat_state']) + 1) % 3
             self.spotify.shuffle(repeat_values[new], self.device_id)
-
-        elif command == 'vol_up':
-            self.spotify.volume(min(device_status['volume_percent'] + 2, 100), self.device_id)
-        elif command == 'vol_dn':
-            self.spotify.volume(max(device_status['volume_percent'] - 2, 0), self.device_id)
         elif command == 'mute':
             if self.last_volume == 0:
                 self.last_volume = device_status['volume_percent']
@@ -123,20 +118,20 @@ class SpotifyHandler(BaseActionHandler):
                 self.last_volume = 0
 
         # Commands with a value
+        elif command == 'vol_up':
+            self.spotify.volume(min(device_status['volume_percent'] + int(command_dict['value']), 100), self.device_id)
+        elif command == 'vol_dn':
+            self.spotify.volume(max(device_status['volume_percent'] - int(command_dict['value']), 0), self.device_id)
         elif command == 'seek':
             self.spotify.seek_track(int(current['progress_ms']) + int(command_dict['value']), self.device_id)
         elif command == 'playlist':
             playlist_uri = self._find_playlist(command_dict['value'])
-            if not playlist_uri:
-                # Playlist not found
-                return
-            self.spotify.start_playback(self.device_id, playlist_uri)
+            if playlist_uri:
+                self.spotify.start_playback(self.device_id, playlist_uri)
         elif command == 'album':
             album_uri = self._find_playlist(command_dict['value'])
-            if not album_uri:
-                # Album not found
-                return
-            self.spotify.start_playback(self.device_id, album_uri)
+            if album_uri:
+                self.spotify.start_playback(self.device_id, album_uri)
 
     def _get_id(self, device_name):
         for device in self.spotify.devices()['devices']:

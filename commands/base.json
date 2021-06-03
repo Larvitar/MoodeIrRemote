@@ -1,12 +1,12 @@
 {
   "power": {
     "global": {
-      "target": "shell",
-      "command": "sudo shutdown now"
+      "target": "moode",
+      "command": "poweroff"
     }
   },
   "ok": {
-    "mpd": {
+    "moode": {
       "target": "shell",
       "command": "mpc toggle"
     },
@@ -15,10 +15,100 @@
       "command": "toggle"
     }
   },
-  "source": {
-    "global": {
+  "play": {
+    "moode": {
+      "target": "shell",
+      "command": "mpc play"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "play"
+    }
+  },
+  "pause": {
+    "moode": {
+      "target": "shell",
+      "command": "mpc pause"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "pause"
+    }
+  },
+  "next": {
+    "moode": {
+      "target": "shell",
+      "command": "mpc next"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "next"
+    }
+  },
+  "prev": {
+    "moode": {
+      "target": "shell",
+      "command": "mpc prev"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "prev"
+    }
+  },
+  "vol_up": {
+    "moode": {
       "target": "moode",
-      "command": "force_mpd"
+      "command": "vol_up",
+      "value": 2
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "vol_up",
+      "value": 2
+    }
+  },
+  "vol_dn": {
+    "moode": {
+      "target": "moode",
+      "command": "vol_dn",
+      "value": 2
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "vol_dn",
+      "value": 2
+    }
+  },
+  "mute": {
+    "moode": {
+      "target": "moode",
+      "command": "mute"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "mute"
+    }
+  },
+  "seek_fw": {
+    "moode": {
+      "target": "shell",
+      "command": "mpc seek +5"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "seek",
+      "value": 5000
+    }
+  },
+  "seek_rw": {
+    "moode": {
+      "target": "shell",
+      "command": "mpc seek -5"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "seek",
+      "value": -5000
     }
   }
 }

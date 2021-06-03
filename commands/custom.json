@@ -1,4 +1,10 @@
 {
+  "exit": {
+    "global": {
+      "target": "moode",
+      "command": "disconnect-renderer"
+    }
+  },
   "1": {
     "global": {
       "target": "shell",
@@ -16,6 +22,20 @@
       "target": "spotify",
       "command": "playlist",
       "value": "Touhou Project"
+    }
+  },
+  "4": {
+    "global": {
+      "target": "moode",
+      "command": "playlist",
+      "value": "Favorites"
+    }
+  },
+  "5": {
+    "global": {
+      "target": "moode",
+      "command": "radio",
+      "value": "RTR Radio"
     }
   }
 }
