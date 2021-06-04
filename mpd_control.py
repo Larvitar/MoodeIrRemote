@@ -9,6 +9,7 @@ from pprint import pformat
 from typing import Optional, List, Dict
 from os import path
 from copy import deepcopy
+import traceback
 import json
 import sys
 
@@ -80,7 +81,7 @@ class IrHandler(object):
                     handler.call(command_dict)
                 except Exception as e:
                     # Do not fail script on exception
-                    print(e)
+                    print(traceback.format_exc(e))
 
     def verify_commands(self):
 
@@ -148,7 +149,7 @@ class IrHandler(object):
                     del _code[key]
 
             for key, value in _code.items():
-                if isinstance(value, set):
+                if isinstance(value, set) or isinstance(value, tuple):
                     _code[key] = list(value)
 
             return _code
@@ -178,7 +179,7 @@ class IrHandler(object):
                 if len(return_codes) == 2:
                     return return_codes
 
-            print('Press the key again to verify')
+            print('\t\tPress the key again to verify')
 
     def setup(self):
         try:
@@ -187,7 +188,7 @@ class IrHandler(object):
             for key_name in self.commands.keys():
                 while True:
                     recorded_len = len(self.keymap[key_name]) if key_name in self.keymap else 0
-                    action = input(f'Button "{key_name}" (recorded: {recorded_len}) '
+                    action = input(f'Button "{key_name}" \t(recorded: {recorded_len}) '
                                    f'[(R)ecord / (D)iscard last / (N)ext / (E)nd]: ')
                     if action.lower() == 'r':
                         codes = self._record()
