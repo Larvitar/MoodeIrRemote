@@ -93,8 +93,8 @@ class IrHandler(object):
                     handler.verify(command)
 
     @staticmethod
-    def clear_keymap():
-        with open(path.join(DIR, 'keymaps', 'default.json'), 'w+') as keymap_file:
+    def clear_keymap(_file_name):
+        with open(path.join(DIR, 'keymaps', _file_name), 'w+') as keymap_file:
             json.dump({}, keymap_file)
 
     def load_keymap(self, file_name=False):
@@ -213,7 +213,7 @@ class IrHandler(object):
         finally:
             print(f'Setup result: \n{pformat(self.keymap)}')
 
-            with open(path.join(DIR, 'keymaps', 'default.json'), 'w') as keymap_file:
+            with open(path.join(DIR, 'keymaps', file_name), 'w') as keymap_file:
                 json.dump(self.keymap, keymap_file, indent=2)
 
             self.load_keymap()
@@ -256,17 +256,17 @@ if __name__ == '__main__':
     ir_handler = IrHandler(test_mode='test' in sys.argv[1:])
 
     # TODO: Clean
-    file_name = 'default.json'
+    _file_name = 'default.json'
     for arg in sys.argv[1:]:
         if arg.endswith('json'):
-            file_name = arg
+            _file_name = arg
             break
 
     if 'clear' in sys.argv[1:]:
-        ir_handler.clear_keymap()
+        ir_handler.clear_keymap(_file_name)
 
     if 'setup' in sys.argv[1:]:
-        ir_handler.setup(file_name)
+        ir_handler.setup(_file_name)
 
     if 'setup' in sys.argv[1:] or 'clear' in sys.argv[1:]:
         sys.exit()
