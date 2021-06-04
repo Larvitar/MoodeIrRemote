@@ -61,7 +61,7 @@ class MoodeHandler(BaseActionHandler):
         current_status = self._read_mpd_status()
 
         active_renderer = self.get_active_renderer()
-        if active_renderer != 'moode':
+        if active_renderer in self.svc_map:
             # Make sure nothing else is playing
             requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
                           data={'job': self.svc_map[active_renderer]})
@@ -94,8 +94,9 @@ class MoodeHandler(BaseActionHandler):
             repeat = (int(current_status['repeat']) + 1) % 2
             response = requests.get(self.base_url + 'index.php?cmd=repeat+{value}'.format(value=repeat))
         elif command == 'disconnect-renderer':
-            response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
-                                     data={'job': self.svc_map[active_renderer]})
+            if active_renderer in self.svc_map:
+                response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
+                                         data={'job': self.svc_map[active_renderer]})
         elif command == 'mute':
             response = requests.get(self.base_url + '?cmd=vol.sh+mute')
 
@@ -109,7 +110,7 @@ class MoodeHandler(BaseActionHandler):
                                      data={'path': command_dict['value']})
         elif command == 'radio':
             response = requests.post(self.base_url + 'moode.php?cmd=clear_play_item',
-                                     data={'path': 'RADIO/' + command_dict['value']})
+                                     data={'path': f"RADIO/{command_dict['value']}.pls"})
 
         elif command == 'custom':
             # Allow for any other command as defined by user
