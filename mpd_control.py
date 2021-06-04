@@ -8,6 +8,7 @@ from piir.decode import decode
 from pprint import pformat
 from typing import Optional, List, Dict
 from os import path
+from copy import deepcopy
 import json
 import sys
 
@@ -124,25 +125,24 @@ class IrHandler(object):
                 return code[0]
 
     def _record(self):
-        code_1 = self._record_key()
-        print('Press the key again to verify')
-        code_2 = self._record_key()
+        codes = []
+        return_codes = []
+        while True:
+            code = self._record_key()
+            if codes and code == codes[-1]:
+                # Same code twice in a row
+                return [deepcopy(code)]
+            else:
+                # Some remotes use 2 alternating codes for the same button
+                if code in codes:
+                    return_codes.append(deepcopy(code))
+                else:
+                    codes.append(deepcopy(code))
 
-        if code_1 == code_2:
-            return [code_2]
+                if len(return_codes) == 2:
+                    return codes
 
-        codes = [code_1, code_2]
-        # Some remotes use 2 codes alternately
-        code_3 = None
-        while code_3 not in codes:
             print('Press the key again to verify')
-            code_3 = self._record_key()
-        code_4 = None
-        while code_4 not in codes:
-            print('Press the key again to verify')
-            code_4 = self._record_key()
-
-        return codes
 
     def setup(self):
         try:
@@ -193,20 +193,20 @@ class IrHandler(object):
         while True:
             code = str(decode(receive(self.config.ir_gpio_pin)))
 
-            if self.test_mode:
-                print(f'Code "{code}" received.')
-            else:
-                try:
-                    key_name = None
-                    for _key, _codes in self.keymap.items():
-                        if code in _codes:
-                            key_name = _key
+            try:
+                key_name = None
+                for _key, _codes in self.keymap.items():
+                    if code in _codes:
+                        key_name = _key
 
-                    command = self.commands[key_name]
-                except KeyError:
+                command = self.commands[key_name]
+                if self.test_mode:
+                    print(f'Key "{key_name}" received.')
                     continue
+            except KeyError:
+                continue
 
-                self.call(command)
+            self.call(command)
 
 
 if __name__ == '__main__':
