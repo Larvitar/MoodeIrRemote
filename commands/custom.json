@@ -1,8 +1,22 @@
 {
-  "exit": {
-    "global": {
+  "random": {
+    "moode": {
       "target": "moode",
-      "command": "disconnect-renderer"
+      "command": "random"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "shuffle"
+    }
+  },
+  "repeat": {
+    "moode": {
+      "target": "moode",
+      "command": "repeat"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "repeat"
     }
   },
   "1": {
@@ -37,5 +51,20 @@
       "command": "radio",
       "value": "RTR Radio"
     }
+  },
+  "6": {
+
+  },
+  "7": {
+
+  },
+  "8": {
+
+  },
+  "9": {
+
+  },
+  "0": {
+
   }
 }

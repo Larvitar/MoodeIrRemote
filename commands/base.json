@@ -103,7 +103,7 @@
       "command": "mute"
     }
   },
-  "seek_fw": {
+  "seek_forward": {
     "moode": {
       "target": "shell",
       "command": "mpc seek +5"
@@ -114,7 +114,7 @@
       "value": 5000
     }
   },
-  "seek_rw": {
+  "seek_backward": {
     "moode": {
       "target": "shell",
       "command": "mpc seek -5"
@@ -123,6 +123,12 @@
       "target": "spotify",
       "command": "seek",
       "value": -5000
+    }
+  },
+  "exit": {
+    "global": {
+      "target": "moode",
+      "command": "disconnect-renderer"
     }
   }
 }
