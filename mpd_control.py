@@ -51,6 +51,8 @@ class IrHandler(object):
                 'moode': MoodeHandler(),
                 'bluetooth': BluetoothHandler()
             }
+        else:
+            self.handlers: Dict[str, BaseActionHandler] = {}
 
         self.load_commands()
 
