@@ -186,7 +186,8 @@ class IrHandler(object):
 
             for key_name in self.commands.keys():
                 while True:
-                    action = input(f'Button "{key_name}" (recorded: {len(self.keymap[key_name])}) '
+                    recorded_len = len(self.keymap[key_name]) if key_name in self.keymap else 0
+                    action = input(f'Button "{key_name}" (recorded: {recorded_len}) '
                                    f'[(R)ecord / (D)iscard last / (N)ext / (E)nd]: ')
                     if action.lower() == 'r':
                         codes = self._record()
