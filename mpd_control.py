@@ -120,15 +120,45 @@ class IrHandler(object):
                 assert key not in self.commands, f'Command "{key}" is duplicated!'
                 self.commands.update({key: value})
 
+    @staticmethod
+    def _parse_code(_code):
+        """
+        Parse received code
+        :return:
+        """
+
+        if not _code:
+            return
+
+        if isinstance(_code, list):
+            _code = _code[0]
+
+        if isinstance(_code, dict):
+            if not ({'data', 'preamble', 'postamble'} < set(_code.keys())):
+                # Required fields
+                return
+
+            if not isinstance(_code['data'], bytes):
+                return
+
+            _code['data'] = _code['data'].hex()
+            keys_to_remove = ['gap', 'timebase']
+            for key in keys_to_remove:
+                if key in _code:
+                    del _code[key]
+
+            for key, value in _code.items():
+                if isinstance(value, set):
+                    _code[key] = list(value)
+
+            return _code
+
     def _record_key(self):
         while True:
             code = decode(receive(self.config.ir_gpio_pin))
-            if code:
-                _code = code[0]
-                # TODO: Verify
-                if isinstance(_code, dict) and 'data' in _code:
-                    _code['data'] = _code['data'].hex()
-                    return _code
+            parsed = self._parse_code(code)
+            if parsed:
+                return parsed
 
     def _record(self):
         codes = []
