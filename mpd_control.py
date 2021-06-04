@@ -191,7 +191,7 @@ class IrHandler(object):
 
         print('Monitoring started')
         while True:
-            code = str(decode(receive(self.config.ir_gpio_pin)))
+            code = self._record_key()
 
             try:
                 key_name = None
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     if 'setup' in sys.argv[1:]:
         ir_handler.setup()
 
-    if 'setup' or 'clear' in sys.argv[1:]:
+    if 'setup' in sys.argv[1:] or 'clear' in sys.argv[1:]:
         sys.exit()
 
     ir_handler.verify_commands()
