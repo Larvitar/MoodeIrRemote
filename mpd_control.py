@@ -117,6 +117,33 @@ class IrHandler(object):
                     assert key not in self.commands, f'Command "{key}" is duplicated!'
                     self.commands.update({key, value})
 
+    def _record_key(self):
+        while True:
+            code = decode(receive(self.config.ir_gpio_pin))
+            if code:
+                return code[0]
+
+    def _record(self):
+        code_1 = self._record_key()
+        print('Press the key again to verify')
+        code_2 = self._record_key()
+
+        if code_1 == code_2:
+            return [code_2]
+
+        codes = [code_1, code_2]
+        # Some remotes use 2 codes alternately
+        code_3 = None
+        while code_3 not in codes:
+            print('Press the key again to verify')
+            code_3 = self._record_key()
+        code_4 = None
+        while code_4 not in codes:
+            print('Press the key again to verify')
+            code_4 = self._record_key()
+
+        return codes
+
     def setup(self):
         try:
             self.load_keymap(default_only=True)
@@ -126,15 +153,14 @@ class IrHandler(object):
                     while True:
                         action = input(f'Button "{key_name}" [(R)ecord / (N)ext / (E)nd]: ')
                         if action.lower() == 'r':
-                            code = str(decode(receive(self.config.ir_gpio_pin)))
+                            codes = self._record()
+
                             if key_name not in self.keymap:
                                 self.keymap[key_name] = list()
 
-                            if code not in self.keymap[key_name]:
-                                print(f'Recorded "{code}"')
-                                self.keymap[key_name].append(code)
-                            else:
-                                print(f'Already recorded "{code}"   ')
+                            for code in codes:
+                                if code not in self.keymap[key_name]:
+                                    self.keymap[key_name].append(code)
 
                         elif action.lower() == 'n':
                             break
