@@ -71,10 +71,6 @@ class IrHandler(object):
 
         for command_dict in commands:
 
-            if renderer in ['bluetooth'] and command_dict['target'] != renderer:
-                # It is not possible to disconnect BT server side, so only allow BT commands when BT is playing.
-                return
-
             if command_dict['target'] in self.handlers:
                 handler = self.handlers[command_dict['target']]
                 try:

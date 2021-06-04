@@ -64,12 +64,12 @@
     "spotify": {
       "target": "spotify",
       "command": "vol_up",
-      "value": 2
+      "value": 5
     },
     "bluetooth": {
       "target": "bluetooth",
       "command": "vol_up",
-      "value": 2
+      "value": 5
     }
   },
   "vol_dn": {
@@ -81,12 +81,12 @@
     "spotify": {
       "target": "spotify",
       "command": "vol_dn",
-      "value": 2
+      "value": 5
     },
     "bluetooth": {
       "target": "bluetooth",
       "command": "vol_dn",
-      "value": 2
+      "value": 5
     }
   },
   "mute": {

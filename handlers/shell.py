@@ -1,6 +1,6 @@
 from typing import List, Dict
 from handlers.base_handler import BaseActionHandler
-import subprocess
+from subprocess import run, DEVNULL
 
 
 class ShellCommandsHandler(BaseActionHandler):
@@ -13,7 +13,7 @@ class ShellCommandsHandler(BaseActionHandler):
 
         for _command in command:
             parsed = self._parse_command(_command)
-            subprocess.run(parsed, stdout=subprocess.DEVNULL)
+            run(parsed, stdout=DEVNULL)
 
     def verify(self, command_dict):
         command = command_dict['command']

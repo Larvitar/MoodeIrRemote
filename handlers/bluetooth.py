@@ -1,5 +1,5 @@
 from handlers.base_handler import BaseActionHandler
-from subprocess import check_output, run
+from subprocess import check_output, run, DEVNULL
 from re import search
 
 
@@ -27,7 +27,7 @@ class BluetoothHandler(BaseActionHandler):
 
     @staticmethod
     def _send_amixer_command(ctype, device_name, command):
-        run(['amixer', '-D', 'bluealsa', ctype, device_name, command])
+        run(['amixer', '-D', 'bluealsa', ctype, device_name, command], stdout=DEVNULL)
 
     def verify(self, command_dict):
         assert 'command' in command_dict, f'\'command\' missing from {command_dict}'
