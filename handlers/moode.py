@@ -56,15 +56,19 @@ class MoodeHandler(BaseActionHandler):
             assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int), \
                 f'\'{command_dict["command"]}\' type({type(command_dict["command"])}) value is not allowed!'
 
+    def disconnect_renderer(self, desired_state):
+
+        active_renderer = self.get_active_renderer()
+        if active_renderer != desired_state and active_renderer in self.svc_map:
+            # Make sure nothing else is playing
+            requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
+                          data={'job': self.svc_map[active_renderer]})
+
     def call(self, command_dict):
         command = command_dict['command']
         current_status = self._read_mpd_status()
 
-        active_renderer = self.get_active_renderer()
-        if active_renderer in self.svc_map:
-            # Make sure nothing else is playing
-            requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
-                          data={'job': self.svc_map[active_renderer]})
+        self.disconnect_renderer(desired_state='moode')
 
         response = None
         # Worker commands
@@ -94,9 +98,7 @@ class MoodeHandler(BaseActionHandler):
             repeat = (int(current_status['repeat']) + 1) % 2
             response = requests.get(self.base_url + 'index.php?cmd=repeat+{value}'.format(value=repeat))
         elif command == 'disconnect-renderer':
-            if active_renderer in self.svc_map:
-                response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
-                                         data={'job': self.svc_map[active_renderer]})
+            self.disconnect_renderer(desired_state='moode')
         elif command == 'mute':
             response = requests.get(self.base_url + '?cmd=vol.sh+mute')
 

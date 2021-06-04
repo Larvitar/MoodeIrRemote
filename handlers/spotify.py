@@ -98,6 +98,8 @@ class SpotifyHandler(BaseActionHandler):
             # Spotify was not authenticated
             return
 
+        MoodeHandler().disconnect_renderer(desired_state='spotify')
+
         device_status = self._get_device_status()
         if not device_status:
             print('ERROR')

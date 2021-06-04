@@ -41,6 +41,9 @@ class BluetoothHandler(BaseActionHandler):
 
     def call(self, command_dict):
         command = command_dict['command']
+
+        # No point in disconnecting renderers since we're only running volume commands
+
         device_status = self._get_device_status()
         if 'device_name' not in device_status:
             return
