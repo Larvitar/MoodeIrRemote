@@ -94,7 +94,7 @@ class IrHandler(object):
     @staticmethod
     def clear_keymap():
         with open(path.join(DIR, 'keymaps', 'default.json'), 'w+') as keymap_file:
-            keymap_file.write('')
+            json.dump({}, keymap_file)
 
     def load_keymap(self, default_only=False):
         self.keymap.clear()
@@ -140,13 +140,13 @@ class IrHandler(object):
                 return [deepcopy(code)]
             else:
                 # Some remotes use 2 alternating codes for the same button
-                if code in codes:
+                if code in codes and code not in return_codes:
                     return_codes.append(deepcopy(code))
                 else:
                     codes.append(deepcopy(code))
 
                 if len(return_codes) == 2:
-                    return codes
+                    return return_codes
 
             print('Press the key again to verify')
 
@@ -155,7 +155,7 @@ class IrHandler(object):
             self.load_keymap(default_only=True)
 
             for key_name in self.commands.keys():
-                if key_name not in self.keymap.values():
+                if key_name not in self.keymap.keys():
                     while True:
                         action = input(f'Button "{key_name}" [(R)ecord / (N)ext / (E)nd]: ')
                         if action.lower() == 'r':
