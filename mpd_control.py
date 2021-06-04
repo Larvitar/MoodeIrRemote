@@ -124,7 +124,11 @@ class IrHandler(object):
         while True:
             code = decode(receive(self.config.ir_gpio_pin))
             if code:
-                return code[0]
+                _code = code[0]
+                # TODO: Verify
+                if isinstance(_code, dict) and 'data' in _code:
+                    _code['data'] = _code['data'].hex()
+                    return _code
 
     def _record(self):
         codes = []
@@ -172,11 +176,11 @@ class IrHandler(object):
                 else:
                     print(f'Button {key_name} already recorded')
 
-            with open(path.join(DIR, 'keymaps', 'default.json'), 'w') as keymap_file:
-                json.dump(self.keymap, keymap_file, indent=2)
-
         finally:
             print(f'Setup result: \n{pformat(self.keymap)}')
+
+            with open(path.join(DIR, 'keymaps', 'default.json'), 'w') as keymap_file:
+                json.dump(self.keymap, keymap_file, indent=2)
 
             self.load_keymap()
 
