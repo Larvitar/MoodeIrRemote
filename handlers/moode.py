@@ -19,6 +19,15 @@ class MoodeHandler(BaseActionHandler):
             'inpactive': 'input'
         }
 
+        self.svc_map = {
+            'roonbridge': 'rbsvc',
+            'airplay': 'airplaysvc',
+            'bluetooth': 'btsvc',
+            'squeezelite': 'slsvc',
+            'spotify': 'spotifysvc',
+            'input': 'gpio_svc'     # maybe?
+        }
+
     def get_active_renderer(self) -> Optional[str]:
         sys_config = self.read_cfg_system()
 
@@ -49,8 +58,12 @@ class MoodeHandler(BaseActionHandler):
     def call(self, command_dict):
         command = command_dict['command']
         current_status = self._read_mpd_status()
-        if self.get_active_renderer() != 'moode':
-            requests.get(self.base_url + 'moode.php?cmd=disconnect-renderer')   # Make sure nothing else is playing
+
+        active_renderer = self.get_active_renderer()
+        if active_renderer != 'moode':
+            # Make sure nothing else is playing
+            requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
+                          data={'job': self.svc_map[active_renderer]})
 
         response = None
         # Worker commands
@@ -80,7 +93,8 @@ class MoodeHandler(BaseActionHandler):
             repeat = (int(current_status['repeat']) + 1) % 2
             response = requests.get(self.base_url + 'index.php?cmd=repeat+{value}'.format(value=repeat))
         elif command == 'disconnect-renderer':
-            response = requests.get(self.base_url + 'moode.php?cmd=disconnect-renderer')
+            response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
+                                     data={'job': self.svc_map[active_renderer]})
         elif command == 'mute':
             response = requests.get(self.base_url + '?cmd=vol.sh+mute')
 
