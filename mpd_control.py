@@ -85,9 +85,9 @@ class IrHandler(object):
         for command_dict in self.commands.values():
             for command in command_dict.values():
                 assert 'target' in command, f'\'target\' missing from {command_dict}'
-                if command_dict['target'] in self.handlers:
-                    handler = self.handlers[command_dict['target']]
-                    handler.verify(command_dict)
+                if command['target'] in self.handlers:
+                    handler = self.handlers[command['target']]
+                    handler.verify(command)
 
     @staticmethod
     def clear_keymap():
