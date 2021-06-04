@@ -191,7 +191,7 @@ class IrHandler(object):
             print("Keymap is empty! Please run 'setup' first.")
             sys.exit(1)
 
-        diff = set(self.commands.keys()) - set(self.keymap.values())
+        diff = set(self.commands.keys()) - set(self.keymap.keys())
         if diff:
             print(f'Some keys are missing from setup! \n{pformat(diff)}')
 

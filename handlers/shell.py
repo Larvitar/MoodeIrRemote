@@ -37,5 +37,6 @@ class ShellCommandsHandler(BaseActionHandler):
                 # Outside ' " '
                 parsed.extend(command_parts[index].strip().split(' '))
 
-        parsed.remove('')
+        if '' in parsed:
+            parsed.remove('')
         return parsed
