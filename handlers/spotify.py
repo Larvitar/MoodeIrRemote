@@ -129,7 +129,7 @@ class SpotifyHandler(BaseActionHandler):
         elif command == 'repeat':
             repeat_values = ["track", "context", "off"]
             new = (repeat_values.index(current['repeat_state']) + 1) % 3
-            self.spotify.shuffle(repeat_values[new], self.device_id)
+            self.spotify.repeat(repeat_values[new], self.device_id)
         elif command == 'mute':
             if self.last_volume == 0:
                 self.last_volume = device_status['volume_percent']

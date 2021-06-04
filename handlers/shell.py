@@ -13,7 +13,7 @@ class ShellCommandsHandler(BaseActionHandler):
 
         for _command in command:
             parsed = self._parse_command(_command)
-            subprocess.run(parsed)
+            subprocess.run(parsed, stdout=subprocess.DEVNULL)
 
     def verify(self, command_dict):
         command = command_dict['command']
