@@ -48,6 +48,7 @@ class SpotifyHandler(BaseActionHandler):
 
     def __init__(self, config: Dict):
         self.device_id = None
+        self.device_name = None
 
         if {'client_id', 'client_secret', 'redirect_uri', 'listen_ip'} <= config.keys() or \
                 False in [bool(value) for value in config.values()]:
