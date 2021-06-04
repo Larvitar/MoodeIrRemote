@@ -172,8 +172,8 @@ class IrHandler(object):
                 # Some remotes use 2 alternating codes for the same button
                 if code in codes and code not in return_codes:
                     return_codes.append(deepcopy(code))
-                else:
-                    codes.append(deepcopy(code))
+
+                codes.append(deepcopy(code))
 
                 if len(return_codes) == 2:
                     return return_codes
