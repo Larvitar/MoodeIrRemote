@@ -95,18 +95,17 @@ class IrHandler(object):
 
     def load_keymap(self, default_only=False):
         self.keymap.clear()
-        remotes = self.config.remotes if not default_only else 'default.json'
+        remotes = self.config.remotes if not default_only else ['default.json']
         for keymap_name in remotes:
             with open(path.join(DIR, 'keymaps', keymap_name), 'r') as keymap_file:
-                if keymap_file.read():
-                    keymap: Dict[str, List] = json.load(keymap_file)
-                    for key_name, codes in keymap.items():
-                        if key_name not in self.keymap:
-                            self.keymap[key_name] = list()
+                keymap: Dict[str, List] = json.load(keymap_file)
+                for key_name, codes in keymap.items():
+                    if key_name not in self.keymap:
+                        self.keymap[key_name] = list()
 
-                        for code in codes:
-                            if code not in self.keymap[key_name]:
-                                self.keymap[key_name].append(code)
+                    for code in codes:
+                        if code not in self.keymap[key_name]:
+                            self.keymap[key_name].append(code)
 
     def load_commands(self):
         with open(path.join(DIR, 'commands', 'base.json'), 'r') as commands_file:
