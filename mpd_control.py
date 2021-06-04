@@ -97,9 +97,9 @@ class IrHandler(object):
         with open(path.join(DIR, 'keymaps', 'default.json'), 'w+') as keymap_file:
             json.dump({}, keymap_file)
 
-    def load_keymap(self, default_only=False):
+    def load_keymap(self, file_name=False):
         self.keymap.clear()
-        remotes = self.config.remotes if not default_only else ['default.json']
+        remotes = self.config.remotes if not file_name else [file_name]
         for keymap_name in remotes:
             with open(path.join(DIR, 'keymaps', keymap_name), 'r') as keymap_file:
                 keymap: Dict[str, List] = json.load(keymap_file)
@@ -181,9 +181,9 @@ class IrHandler(object):
 
             print('\t\tPress the key again to verify')
 
-    def setup(self):
+    def setup(self, file_name):
         try:
-            self.load_keymap(default_only=True)
+            self.load_keymap(file_name)
 
             for key_name in self.commands.keys():
                 while True:
@@ -255,11 +255,18 @@ if __name__ == '__main__':
 
     ir_handler = IrHandler(test_mode='test' in sys.argv[1:])
 
+    # TODO: Clean
+    file_name = 'default.json'
+    for arg in sys.argv[1:]:
+        if arg.endswith('json'):
+            file_name = arg
+            break
+
     if 'clear' in sys.argv[1:]:
         ir_handler.clear_keymap()
 
     if 'setup' in sys.argv[1:]:
-        ir_handler.setup()
+        ir_handler.setup(file_name)
 
     if 'setup' in sys.argv[1:] or 'clear' in sys.argv[1:]:
         sys.exit()
