@@ -187,7 +187,7 @@ class IrHandler(object):
             for key_name in self.commands.keys():
                 if key_name not in self.keymap.keys():
                     while True:
-                        action = input(f'Button "{key_name}" [(R)ecord / (N)ext / (E)nd]: ')
+                        action = input(f'Button "{key_name}" [(R)ecord / (D)iscard last / (N)ext / (E)nd]: ')
                         if action.lower() == 'r':
                             codes = self._record()
 
@@ -197,6 +197,10 @@ class IrHandler(object):
                             for code in codes:
                                 if code not in self.keymap[key_name]:
                                     self.keymap[key_name].append(code)
+
+                        elif action.lower() == 'd':
+                            if self.keymap[key_name]:
+                                self.keymap[key_name].pop(-1)
 
                         elif action.lower() == 'n':
                             break
