@@ -12,6 +12,9 @@ import json
 import sys
 
 
+DIR = path.dirname(path.realpath(__file__))
+
+
 class Config(object):
 
     def __init__(self):
@@ -20,7 +23,7 @@ class Config(object):
         self.spotify: Dict[str, str] = {}
 
     def load(self):
-        with open(path.join(path.realpath(__file__), 'config.json')) as file:
+        with open(path.join(DIR, 'config.json')) as file:
             config: Dict = json.load(file)
             for key, value in config.items():
                 setattr(self, key, value)
@@ -87,14 +90,14 @@ class IrHandler(object):
 
     @staticmethod
     def clear_keymap():
-        with open(path.join(path.realpath(__file__), 'keymaps', 'default.json'), 'w+') as keymap_file:
+        with open(path.join(DIR, 'keymaps', 'default.json'), 'w+') as keymap_file:
             keymap_file.write('')
 
     def load_keymap(self, default_only=False):
         self.keymap.clear()
         remotes = self.config.remotes if not default_only else 'default.json'
         for keymap_name in remotes:
-            with open(path.join(path.realpath(__file__), 'keymaps', keymap_name), 'r') as keymap_file:
+            with open(path.join(DIR, 'keymaps', keymap_name), 'r') as keymap_file:
                 if keymap_file.read():
                     keymap: Dict[str, List] = json.load(keymap_file)
                     for key_name, codes in keymap.items():
@@ -106,11 +109,11 @@ class IrHandler(object):
                                 self.keymap[key_name].append(code)
 
     def load_commands(self):
-        with open(path.join(path.realpath(__file__), 'commands', 'base.json'), 'r') as commands_file:
+        with open(path.join(DIR, 'commands', 'base.json'), 'r') as commands_file:
             if commands_file.read():
                 self.commands = json.load(commands_file)
 
-        with open(path.join(path.realpath(__file__), 'commands', 'custom.json'), 'r') as commands_file:
+        with open(path.join(DIR, 'commands', 'custom.json'), 'r') as commands_file:
             if commands_file.read():
                 custom_commands: Dict = json.load(commands_file)
                 for key, value in custom_commands.items():
@@ -170,7 +173,7 @@ class IrHandler(object):
                 else:
                     print(f'Button {key_name} already recorded')
 
-            with open(path.join(path.realpath(__file__), 'keymaps', 'default.json'), 'w') as keymap_file:
+            with open(path.join(DIR, 'keymaps', 'default.json'), 'w') as keymap_file:
                 json.dump(self.keymap, keymap_file, indent=2)
 
         finally:
