@@ -185,30 +185,28 @@ class IrHandler(object):
             self.load_keymap(default_only=True)
 
             for key_name in self.commands.keys():
-                if key_name not in self.keymap.keys():
-                    while True:
-                        action = input(f'Button "{key_name}" [(R)ecord / (D)iscard last / (N)ext / (E)nd]: ')
-                        if action.lower() == 'r':
-                            codes = self._record()
+                while True:
+                    action = input(f'Button "{key_name}" (recorded: {len(self.keymap[key_name])}) '
+                                   f'[(R)ecord / (D)iscard last / (N)ext / (E)nd]: ')
+                    if action.lower() == 'r':
+                        codes = self._record()
 
-                            if key_name not in self.keymap:
-                                self.keymap[key_name] = list()
+                        if key_name not in self.keymap:
+                            self.keymap[key_name] = list()
 
-                            for code in codes:
-                                if code not in self.keymap[key_name]:
-                                    self.keymap[key_name].append(code)
+                        for code in codes:
+                            if code not in self.keymap[key_name]:
+                                self.keymap[key_name].append(code)
 
-                        elif action.lower() == 'd':
-                            if self.keymap[key_name]:
-                                self.keymap[key_name].pop(-1)
+                    elif action.lower() == 'd':
+                        if self.keymap[key_name]:
+                            self.keymap[key_name].pop(-1)
 
-                        elif action.lower() == 'n':
-                            break
+                    elif action.lower() == 'n':
+                        break
 
-                        elif action.lower() == 'e':
-                            return
-                else:
-                    print(f'Button {key_name} already recorded')
+                    elif action.lower() == 'e':
+                        return
 
         finally:
             print(f'Setup result: \n{pformat(self.keymap)}')
