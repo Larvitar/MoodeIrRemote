@@ -1,5 +1,6 @@
 from handlers.base_handler import BaseActionHandler
 from typing import Optional
+import json
 import requests
 
 
@@ -39,11 +40,11 @@ class MoodeHandler(BaseActionHandler):
 
     def read_cfg_system(self):
         response = requests.get(self.base_url + 'moode.php?cmd=readcfgsystem')
-        return eval(response.content.decode('utf-8'))
+        return json.loads(response.content.decode('utf-8'))
 
     def _read_mpd_status(self):
         response = requests.get(self.base_url + 'moode.php?cmd=getmpdstatus')
-        return eval(response.content.decode('utf-8'))
+        return json.loads(response.content.decode('utf-8'))
 
     def verify(self, command_dict):
         assert 'command' in command_dict, f'\'command\' missing from {command_dict}'
