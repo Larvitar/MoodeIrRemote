@@ -1,5 +1,5 @@
 {
-  "remotes": [],
+  "remotes": ["default.json"],
   "ir_gpio_pin":  24,
   "logging": {
     "level": "INFO",

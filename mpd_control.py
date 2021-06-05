@@ -37,9 +37,6 @@ class Config(object):
             for key, value in config.items():
                 setattr(self, key, value)
 
-        if 'default.json' not in self.remotes:
-            self.remotes.append('default.json')
-
 
 class IrHandler(object):
 
@@ -52,7 +49,10 @@ class IrHandler(object):
         self.logger = getLogger('MoodeIrController')
         self._logger_init()
 
-        self.keymap: Dict[str, List] = dict()
+        if not self.config.remotes:
+            self.logger.error('There are no remotes configured!')
+
+        self.keymap: Dict[str, Optional[List, str]] = dict()
         self.commands: Dict[str, Dict] = dict()
 
         if not self.test_mode:
@@ -127,18 +127,20 @@ class IrHandler(object):
                     handler = self.handlers[command['target']]
                     handler.verify(command)
 
-    @staticmethod
-    def clear_keymap(_file_name):
-        with open(path.join(DIR, 'keymaps', _file_name), 'w+') as keymap_file:
-            json.dump({}, keymap_file)
-
-    def load_keymap(self, file_name=False):
+    def load_keymap(self, file_name=None):
         self.keymap.clear()
         remotes = self.config.remotes if not file_name else [file_name]
         for keymap_name in remotes:
+            if not path.exists(path.join(DIR, 'keymaps', keymap_name)):
+                self.logger.error(f'File not found: {keymap_name}!')
+                continue
             with open(path.join(DIR, 'keymaps', keymap_name), 'r') as keymap_file:
                 keymap: Dict[str, List] = json.load(keymap_file)
                 for key_name, codes in keymap.items():
+                    if isinstance(codes, str):
+                        # Keymap description fields
+                        self.keymap[key_name] = codes
+
                     if key_name not in self.keymap:
                         self.keymap[key_name] = list()
 
@@ -156,6 +158,8 @@ class IrHandler(object):
                 for key, value in custom_commands.items():
                     assert key not in self.commands, f'Command "{key}" is duplicated!'
                     self.commands.update({key: value})
+        else:
+            self.logger.warning('custom.json file not found!')
 
     @staticmethod
     def _parse_code(code):
@@ -224,11 +228,13 @@ class IrHandler(object):
         try:
             self.load_keymap(file_name)
 
+            print(f'Running setup of {file_name}')
+
             for key_name in self.commands.keys():
                 while True:
                     recorded_len = len(self.keymap[key_name]) if key_name in self.keymap else 0
                     action = input(f'Button "{key_name}" \t(recorded: {recorded_len}) '
-                                   f'[(R)ecord / (D)elete last / (N)ext / (E)nd]: ')
+                                   f'[(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: ')
                     if action.lower() == 'r':
                         codes = self._record()
 
@@ -243,6 +249,9 @@ class IrHandler(object):
                         if self.keymap[key_name]:
                             self.keymap[key_name].pop(-1)
 
+                    elif action.lower() == 'c':
+                        self.keymap[key_name] = list()
+
                     elif action.lower() == 'n':
                         if key_name in self.keymap and len(self.keymap[key_name]) == 0:
                             del self.keymap[key_name]
@@ -256,13 +265,17 @@ class IrHandler(object):
         finally:
             print(f'Setup result: \n{pformat(self.keymap)}')
 
-            with open(path.join(DIR, 'keymaps', file_name), 'w') as keymap_file:
-                json.dump(self.keymap, keymap_file, indent=2)
+            if self.keymap:
+                with open(path.join(DIR, 'keymaps', file_name), 'w') as keymap_file:
+                    json.dump(self.keymap, keymap_file, indent=2)
 
             self.load_keymap()
 
-    def monitor(self):
-        self.load_keymap()
+    def monitor(self, file_name=None):
+        self.load_keymap(file_name=file_name)
+
+        if file_name:
+            self.logger.info(f'Loaded keymap {file_name}')
 
         if not self.keymap:
             self.logger.error("Keymap is empty! Please run 'setup' first.")
@@ -272,13 +285,17 @@ class IrHandler(object):
         if diff:
             self.logger.info(f'Some keys are missing from setup! \n\t{pformat(diff)}')
 
-        self.logger.info('Monitoring started')
+        self.logger.info('Monitoring started' + (f' (test mode)' if self.test_mode else ''))
         while True:
             code = self._record_key()
 
             try:
                 key_name = None
                 for _key, _codes in self.keymap.items():
+                    if isinstance(_codes, str):
+                        # Keymap description fields
+                        continue
+
                     if code in _codes:
                         key_name = _key
 
@@ -296,23 +313,21 @@ if __name__ == '__main__':
     if '-h' in sys.argv[1:] or 'help' in sys.argv[1:]:
         print('')  # TODO
 
-    ir_handler = IrHandler(test_mode='test' in sys.argv[1:])
+    _test_mode = 'test' in sys.argv[1:] or 'setup' in sys.argv[1:]
+    ir_handler = IrHandler(test_mode=_test_mode)
 
-    # TODO: Clean
     _file_name = 'default.json'
     for arg in sys.argv[1:]:
         if arg.endswith('json'):
             _file_name = arg
             break
 
-    if 'clear' in sys.argv[1:]:
-        ir_handler.clear_keymap(_file_name)
-
     if 'setup' in sys.argv[1:]:
         ir_handler.setup(_file_name)
-
-    if 'setup' in sys.argv[1:] or 'clear' in sys.argv[1:]:
         sys.exit()
 
-    ir_handler.verify_commands()
-    ir_handler.monitor()
+    if _test_mode:
+        ir_handler.monitor(_file_name)
+    else:
+        ir_handler.verify_commands()
+        ir_handler.monitor()
