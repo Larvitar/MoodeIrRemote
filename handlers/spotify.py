@@ -29,6 +29,7 @@ class AuthHandler(SpotifyOAuth):
         if self.initiated:
             raise AuthenticationException("Authentication token expired! Restart and login again.")
 
+        getLogger('MoodeIrController.AuthHandler').warning('Starting Spotify AuthServer.')
         self.auth_server.start()
         start_time = time()
         while not self.auth_server.code:
