@@ -59,7 +59,7 @@
     "moode": {
       "target": "moode",
       "command": "vol_up",
-      "value": 2
+      "value": 5
     },
     "spotify": {
       "target": "spotify",
@@ -76,7 +76,7 @@
     "moode": {
       "target": "moode",
       "command": "vol_dn",
-      "value": 2
+      "value": 5
     },
     "spotify": {
       "target": "spotify",
@@ -123,6 +123,26 @@
       "target": "spotify",
       "command": "seek",
       "value": -5000
+    }
+  },
+  "random": {
+    "moode": {
+      "target": "moode",
+      "command": "random"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "shuffle"
+    }
+  },
+  "repeat": {
+    "moode": {
+      "target": "moode",
+      "command": "repeat"
+    },
+    "spotify": {
+      "target": "spotify",
+      "command": "repeat"
     }
   },
   "exit": {

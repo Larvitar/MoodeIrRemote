@@ -111,11 +111,12 @@ class IrHandler(object):
         with open(path.join(DIR, 'commands', 'base.json'), 'r') as commands_file:
             self.commands = json.load(commands_file)
 
-        with open(path.join(DIR, 'commands', 'custom.json'), 'r') as commands_file:
-            custom_commands: Dict = json.load(commands_file)
-            for key, value in custom_commands.items():
-                assert key not in self.commands, f'Command "{key}" is duplicated!'
-                self.commands.update({key: value})
+        if path.exists(path.join(DIR, 'commands', 'custom.json')):
+            with open(path.join(DIR, 'commands', 'custom.json'), 'r') as commands_file:
+                custom_commands: Dict = json.load(commands_file)
+                for key, value in custom_commands.items():
+                    assert key not in self.commands, f'Command "{key}" is duplicated!'
+                    self.commands.update({key: value})
 
     @staticmethod
     def _parse_code(_code):

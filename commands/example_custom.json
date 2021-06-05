@@ -1,24 +1,4 @@
 {
-  "random": {
-    "moode": {
-      "target": "moode",
-      "command": "random"
-    },
-    "spotify": {
-      "target": "spotify",
-      "command": "shuffle"
-    }
-  },
-  "repeat": {
-    "moode": {
-      "target": "moode",
-      "command": "repeat"
-    },
-    "spotify": {
-      "target": "spotify",
-      "command": "repeat"
-    }
-  },
   "1": {
     "moode": {
       "target": "shell",
@@ -35,7 +15,8 @@
     "global": {
       "target": "spotify",
       "command": "playlist",
-      "value": "Touhou Project"
+      "value": "Touhou Project",
+      "shuffled": true
     }
   },
   "4": {
