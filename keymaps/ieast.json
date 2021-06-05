@@ -1,0 +1,315 @@
+{
+  "description": "A small (13-key) remote sold with iEAST SoundStream devices.",
+  "power": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f70bf4",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "ok": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f71ee1",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "next": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f714eb",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "prev": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f715ea",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "vol_up": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f70ef1",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "vol_dn": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f71ce3",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "exit": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f741be",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "1": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f7619e",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "2": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f7629d",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "3": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f7639c",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "4": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f7649b",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "5": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f7659a",
+      "postamble": [
+        1
+      ]
+    }
+  ],
+  "6": [
+    {
+      "preamble": [
+        16,
+        8
+      ],
+      "coding": "ppm",
+      "zero": [
+        1,
+        1
+      ],
+      "one": [
+        1,
+        3
+      ],
+      "byte_separator": null,
+      "msb_first": false,
+      "bits": 32,
+      "data": "08f76699",
+      "postamble": [
+        1
+      ]
+    }
+  ]
+}
