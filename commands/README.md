@@ -111,7 +111,9 @@ You can send any command that is not defined above, but you have to take care of
       }
 
 # Spotify
-Enabled only when Spotify is correctly configured and user was authorized. Spotify rendered has to be enabled in Moode settings and running. Script will read device name from Moode config and try to locate that device in Spotify.
+Enabled only when Spotify is correctly configured and user was authorized. Spotify rendered has to be enabled in Moode settings and running. You also have to manually connect your device using Spotify at least once before it becomes available in Spotify API. 
+
+Script will read device name from Moode config and try to locate that device in Spotify.
 
 Available commands are:
 

@@ -14,17 +14,52 @@ TODO
 Configuration is stored in <code>config.json</code>
 
     {
-      "remotes": [],            # List of remote controllers that will be loaded on startup
-      "ir_gpio_pin":  24,       # GPIO pin where IR receiver is attached
-      "spotify": {  # Spotify configuration
+      "remotes": ["default.json"],              # List of remote controllers that will be loaded on startup
+      "ir_gpio_pin":  24,                       # GPIO pin where IR receiver is attached
+      "logging": {
+        "level": "INFO",                        # Level of console logs
+        "file_level": "DEBUG",                  # Level of file logs
+        "global_level": "WARNING",              # Level of root logger (logs from any imported libraries)
+        "log_all_to_file": true                 # Write logs from imported libraries to log file
+      },
+      "spotify": {                              # Spotify configuration
+        "redirect_uri": "http://moode.local:8080/auth",
         "client_id": "",
         "client_secret": "",
-        "redirect_uri": "http://moode.local:8888/auth",
         "auth_server_listen_ip": "0.0.0.0",
-        "auth_server_listen_port": 8888
+        "auth_server_listen_port": 8080
       }
     }
         
+# Remotes configuration
+Remotes configuration is stored in <code>keymaps/*.json</code> files. Run the script with <code>setup <file_name></code> parameter and it will guide you through the process of configuring your own remote. If <code>file_name</code> is not provided <code>default.json</code> will be used.
+
+        > python3  mpd_control.py setup test_remote.json
+        Running setup of test_remote.json
+        Button "power"  (recorded: 0) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: r
+                Press the key again to verify
+        Button "power"  (recorded: 1) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: n
+        Button "ok"     (recorded: 0) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: r
+                Press the key again to verify
+        Button "ok"     (recorded: 0) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: e
+        Setup result: {....}
+        
+You can run <code>Record</code> multiple times in order to assign multiple buttons to the same function (i.e. <code>Right</code> and <code>Channel Up</code> for <code>next song</code>).
+        
+Script will scan through commands defined in <code>commands/base.json</code> and <code>commands/custom.json</code>. If you run <code>setup</code> on already existing keymap, you'll be able to update it.
+
+Run script in test mode if you want to verify a keymap:
+
+        > python3 mpd_control.py test test_remote.json
+        MoodeIrController:INFO - Loaded keymap test_remote.json
+        MoodeIrController:INFO - Monitoring started (test mode)
+        Key "ok" received.
+        Key "power" received.
+        
+**Note:** Some remotes use 2 alternating codes for the same button. Script will try to recognize it and ask you to click it multiple times but if you run into any troubles just try running <code>Record</code> multiple times.
+
+**Note:** If by accident you assign same button to multiple functions (or if 2 remotes send same code for different buttons) script will only run the first action that matches that code.
+
 # Spotify
 Spotify Premium is required. 
 
@@ -54,14 +89,6 @@ Spotify Premium is required.
 **Note:** Script will only wait for 2 minutes for you to complete authentication process. After that server will shutdown and Spotify will not work.
 
 **Note:** If Spotify authorization expires (password change, revoked app permissions etc.) script will drop all spotify commands and a restart will be required in order to run authorization process again.
-
-# Remotes configuration
-Remotes configuration is stored in <code>keymaps/*.json</code> files. Run the script with <code>setup</code> parameter and it will guide you through the process of configuring your own remote. This configuration will be saved into <code>keymaps/default.json</code>
-
-        python3  mpd_control.py setup
-        # TODO:
-
-By default the script will scan through commands defined in <code>commands/base.json</code> and <code>commands/custom.json</code> and only ask for keys to commands that are missing. Run <code>mpd_control.py clear setup</code> if you want to reconfigure every key.
 
 # Commands
 Basic command config:
