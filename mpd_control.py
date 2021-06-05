@@ -77,7 +77,7 @@ class IrHandler(object):
                     handler.call(command_dict)
                 except Exception as e:
                     # Do not fail script on exception
-                    print(traceback.format_exc(e))
+                    print(traceback.format_exc())
 
     def verify_commands(self):
 
@@ -185,7 +185,7 @@ class IrHandler(object):
                 while True:
                     recorded_len = len(self.keymap[key_name]) if key_name in self.keymap else 0
                     action = input(f'Button "{key_name}" \t(recorded: {recorded_len}) '
-                                   f'[(R)ecord / (D)iscard last / (N)ext / (E)nd]: ')
+                                   f'[(R)ecord / (D)elete last / (N)ext / (E)nd]: ')
                     if action.lower() == 'r':
                         codes = self._record()
 
@@ -201,9 +201,13 @@ class IrHandler(object):
                             self.keymap[key_name].pop(-1)
 
                     elif action.lower() == 'n':
+                        if key_name in self.keymap and len(self.keymap[key_name]) == 0:
+                            del self.keymap[key_name]
                         break
 
                     elif action.lower() == 'e':
+                        if key_name in self.keymap and len(self.keymap[key_name]) == 0:
+                            del self.keymap[key_name]
                         return
 
         finally:

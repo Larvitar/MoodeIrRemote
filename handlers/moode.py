@@ -1,5 +1,6 @@
 from handlers.base_handler import BaseActionHandler
 from typing import Optional
+from time import sleep
 import json
 import requests
 
@@ -61,8 +62,12 @@ class MoodeHandler(BaseActionHandler):
         active_renderer = self.get_active_renderer()
         if active_renderer != desired_state and active_renderer in self.svc_map:
             # Make sure nothing else is playing
-            return requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
-                                 data={'job': self.svc_map[active_renderer]})
+            response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
+                                     data={'job': self.svc_map[active_renderer]})
+
+            sleep(5)    # Wait for device to become available
+
+            return response
 
     def call(self, command_dict):
         command = command_dict['command']
