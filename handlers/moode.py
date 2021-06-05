@@ -1,6 +1,6 @@
 from handlers.base_handler import BaseActionHandler
 from typing import Optional
-from time import sleep
+from time import sleep, time
 from logging import getLogger
 import json
 import requests
@@ -42,11 +42,11 @@ class MoodeHandler(BaseActionHandler):
         return 'moode'
 
     def read_cfg_system(self):
-        response = requests.get(self.base_url + 'moode.php?cmd=readcfgsystem')
+        response = self._send_command('GET', 'moode.php?cmd=readcfgsystem')
         return json.loads(response.content.decode('utf-8'))
 
     def _read_mpd_status(self):
-        response = requests.get(self.base_url + 'moode.php?cmd=getmpdstatus')
+        response = self._send_command('GET', 'moode.php?cmd=getmpdstatus')
         return json.loads(response.content.decode('utf-8'))
 
     def verify(self, command_dict):
@@ -64,13 +64,36 @@ class MoodeHandler(BaseActionHandler):
         active_renderer = self.get_active_renderer()
         if active_renderer != desired_state and active_renderer in self.svc_map:
             # Make sure nothing else is playing
-            response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
-                                     data={'job': self.svc_map[active_renderer]})
+            response = self._send_command('POST', 'moode.php?cmd=disconnect-renderer',
+                                          data={'job': self.svc_map[active_renderer]})
 
-            # TODO: Check sysconfig instead
-            sleep(5)    # Wait for device to become available
+            start_time = time()
+            while time() - start_time < 15:     # Max 15s
+                sleep(1)
+                if self.get_active_renderer() == 'moode':
+                    break
+
+            self.logger.info(f"{active_renderer} disconnected")
 
             return response
+
+    def _send_command(self, req_type, command, data=None):
+        assert req_type in ['GET', 'POST']
+
+        response = None
+        if req_type == 'GET':
+            response = requests.get(self.base_url + command)
+        elif req_type == 'POST':
+            assert data
+            response = requests.post(self.base_url + command, data=data)
+
+        if response:
+            if response.status_code == 200:
+                self.logger.debug(f'{response.status_code}: {response.content}')
+            else:
+                self.logger.error(f'{response.status_code}: {response.content}')
+
+        return response
 
     def call(self, command_dict):
         command = command_dict['command']
@@ -78,59 +101,51 @@ class MoodeHandler(BaseActionHandler):
 
         self.disconnect_renderer(desired_state='moode')
 
-        response = None
         # Worker commands
         if command == 'poweroff':
-            response = requests.get(self.base_url + 'moode.php?cmd=poweroff')
+            self._send_command('GET', 'moode.php?cmd=poweroff')
         elif command == 'reboot':
-            response = requests.get(self.base_url + 'moode.php?cmd=reboot')
+            self._send_command('GET', 'moode.php?cmd=reboot')
 
         # Moode commands
         elif command == 'play':
-            response = requests.get(self.base_url + '?cmd=play')
+            self._send_command('GET', '?cmd=play')
         elif command == 'pause':
-            response = requests.get(self.base_url + '?cmd=pause')
+            self._send_command('GET', '?cmd=pause')
         elif command == 'toggle':
             if current_status['state'] == 'play':
-                response = requests.get(self.base_url + '?cmd=pause')
+                self._send_command('GET', '?cmd=pause')
             else:
-                response = requests.get(self.base_url + '?cmd=play')
+                self._send_command('GET', '?cmd=play')
         elif command == 'next':
-            response = requests.get(self.base_url + '?cmd=next')
+            self._send_command('GET', '?cmd=next')
         elif command == 'previous':
-            response = requests.get(self.base_url + '?cmd=previous')
+            self._send_command('GET', '?cmd=previous')
         elif command == 'random':
             random = (int(current_status['random']) + 1) % 2
-            response = requests.get(self.base_url + 'index.php?cmd=random+{value}'.format(value=random))
+            self._send_command('GET', 'index.php?cmd=random+{value}'.format(value=random))
         elif command == 'repeat':
             repeat = (int(current_status['repeat']) + 1) % 2
-            response = requests.get(self.base_url + 'index.php?cmd=repeat+{value}'.format(value=repeat))
+            self._send_command('GET', 'index.php?cmd=repeat+{value}'.format(value=repeat))
         elif command == 'disconnect-renderer':
-            response = self.disconnect_renderer(desired_state='moode')
+            self.disconnect_renderer(desired_state='moode')
         elif command == 'mute':
-            response = requests.get(self.base_url + '?cmd=vol.sh+mute')
+            self._send_command('GET', '?cmd=vol.sh+mute')
 
         # Commands with values
         elif command == 'vol_up':
-            response = requests.get(self.base_url + '?cmd=vol.sh+up+{value}'.format(value=command_dict['value']))
+            self._send_command('GET', '?cmd=vol.sh+up+{value}'.format(value=command_dict['value']))
         elif command == 'vol_dn':
-            response = requests.get(self.base_url + '?cmd=vol.sh+dn+{value}'.format(value=command_dict['value']))
+            self._send_command('GET', '?cmd=vol.sh+dn+{value}'.format(value=command_dict['value']))
         elif command == 'playlist':
-            response = requests.post(self.base_url + 'moode.php?cmd=clear_play_item',
-                                     data={'path': command_dict['value']})
+            self._send_command('POST', 'moode.php?cmd=clear_play_item', data={'path': command_dict['value']})
         elif command == 'radio':
-            response = requests.post(self.base_url + 'moode.php?cmd=clear_play_item',
-                                     data={'path': f"RADIO/{command_dict['value']}.pls"})
+            self._send_command('POST', 'moode.php?cmd=clear_play_item',
+                               data={'path': f"RADIO/{command_dict['value']}.pls"})
 
         elif command == 'custom':
             # Allow for any other command as defined by user
             if 'data' in command_dict:
-                response = requests.post(self.base_url + command_dict['value'], data=command_dict['data'])
+                self._send_command('POST', command_dict['value'], data=command_dict['data'])
             else:
-                response = requests.post(self.base_url + command_dict['value'])
-
-        if response:
-            if response.status_code == 200:
-                self.logger.debug(f'{response.status_code}: {response.content}')
-            else:
-                self.logger.error(f'{response.status_code}: {response.content}')
+                self._send_command('GET', command_dict['value'])
