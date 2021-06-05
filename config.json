@@ -1,7 +1,12 @@
 {
-  "log_level": "INFO",
   "remotes": [],
   "ir_gpio_pin":  24,
+  "logging": {
+    "level": "INFO",
+    "file_level": "DEBUG",
+    "global_level": "WARNING",
+    "log_all_to_file": true
+  },
   "spotify": {
     "redirect_uri": "http://moode.local:8080/auth",
     "client_id": "",

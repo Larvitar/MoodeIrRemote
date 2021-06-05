@@ -7,9 +7,10 @@ from piir.io import receive
 from piir.decode import decode
 from pprint import pformat
 from typing import Optional, List, Dict
-from os import path
+from os import path, makedirs
 from copy import deepcopy
-from logging import getLogger, StreamHandler, Formatter
+from logging import getLogger, StreamHandler, Formatter, basicConfig
+from logging.handlers import TimedRotatingFileHandler
 import json
 import sys
 
@@ -23,7 +24,12 @@ class Config(object):
         self.ir_gpio_pin: Optional[int] = None
         self.remotes: List[str] = []
         self.spotify: Dict[str, str] = {}
-        self.log_level = "INFO"
+        self.logging = {
+            "level": "INFO",
+            "file_level": "DEBUG",
+            "global_level": "WARNING",
+            "log_all_to_file": True
+        }
 
     def load(self):
         with open(path.join(DIR, 'config.json')) as file:
@@ -63,14 +69,31 @@ class IrHandler(object):
 
     def _logger_init(self):
         self.logger.setLevel("DEBUG")
-        formatter = Formatter("%(asctime)s - %(name)s:%(levelname)s - %(message)s")
 
+        formatter = Formatter("%(asctime)s - %(name)s:%(levelname)s - %(message)s")
         stream = StreamHandler()
-        stream.setLevel(self.config.log_level)
+        stream.setLevel(self.config.logging["level"])
         stream.setFormatter(formatter)
+        self.logger.propagate = False
 
         self.logger.addHandler(stream)
-        # TODO: File handler
+
+        # Rotate every day, keep for 3 days
+        log_file_name = path.join(DIR, 'logs', 'main.log')
+
+        if not path.exists(path.dirname(log_file_name)):
+            makedirs(path.dirname(log_file_name))
+
+        file_handler = TimedRotatingFileHandler(filename=log_file_name,
+                                                when='midnight', interval=1, backupCount=3)
+        file_handler.setLevel(self.config.logging["file_level"])
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
+        basicConfig(format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
+                    level=self.config.logging["global_level"])
+        if self.config.logging["log_all_to_file"]:
+            getLogger().addHandler(file_handler)
 
     def call(self, action: dict):
         renderer = MoodeHandler().get_active_renderer()
@@ -247,7 +270,7 @@ class IrHandler(object):
 
         diff = set(self.commands.keys()) - set(self.keymap.keys())
         if diff:
-            self.logger.info(f'Some keys are missing from setup! \n{pformat(diff)}')
+            self.logger.info(f'Some keys are missing from setup! \n\t{pformat(diff)}')
 
         self.logger.info('Monitoring started')
         while True:
