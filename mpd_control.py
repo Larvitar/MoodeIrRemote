@@ -58,7 +58,7 @@ class IrHandler(object):
         if not self.test_mode:
             self.handlers: Dict[str, BaseActionHandler] = {
                 'shell': ShellCommandsHandler(),
-                'spotify': SpotifyHandler(config=self.config.spotify),
+                'spotify': SpotifyHandler(config=self.config.spotify, cache_path=path.join(DIR, '.cache')),
                 'moode': MoodeHandler(),
                 'bluetooth': BluetoothHandler()
             }

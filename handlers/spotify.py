@@ -47,7 +47,7 @@ class SpotifyHandler(BaseActionHandler):
     # List of command that require a value
     require_value = ['vol_up', 'vol_dn', 'seek', 'playlist', 'album']
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict, cache_path):
         self.logger = getLogger('MoodeIrController.SpotifyHandler')
 
         self.device_id = None
@@ -64,6 +64,7 @@ class SpotifyHandler(BaseActionHandler):
             client_id=config['client_id'],
             client_secret=config['client_secret'],
             redirect_uri=config['redirect_uri'],
+            cache_path=cache_path,
             scope=SCOPE
         )
 
