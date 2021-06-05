@@ -7,8 +7,8 @@
   },
   "ok": {
     "moode": {
-      "target": "shell",
-      "command": "mpc toggle"
+      "target": "moode",
+      "command": "toggle"
     },
     "spotify": {
       "target": "spotify",
@@ -17,8 +17,8 @@
   },
   "play": {
     "moode": {
-      "target": "shell",
-      "command": "mpc play"
+      "target": "moode",
+      "command": "play"
     },
     "spotify": {
       "target": "spotify",
@@ -27,8 +27,8 @@
   },
   "pause": {
     "moode": {
-      "target": "shell",
-      "command": "mpc pause"
+      "target": "moode",
+      "command": "pause"
     },
     "spotify": {
       "target": "spotify",
@@ -37,8 +37,8 @@
   },
   "next": {
     "moode": {
-      "target": "shell",
-      "command": "mpc next"
+      "target": "moode",
+      "command": "next"
     },
     "spotify": {
       "target": "spotify",
@@ -47,8 +47,8 @@
   },
   "prev": {
     "moode": {
-      "target": "shell",
-      "command": "mpc prev"
+      "target": "moode",
+      "command": "previous"
     },
     "spotify": {
       "target": "spotify",

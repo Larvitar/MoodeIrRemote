@@ -34,7 +34,11 @@
     }
   },
   "6": {
-
+    "global": {
+      "target": "moode",
+      "command": "playlist",
+      "value": "NAS/HomeServer/Music"
+    }
   },
   "7": {
 

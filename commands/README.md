@@ -75,18 +75,28 @@ Commands that can be run using Moode Web API. Supported commands are:
     previous                - Previous song
     random                  - Toggle 'random' option
     repeat                  - Toggle 'repeat' option
-    disconnect-renderer     - Disconnect external player from MoodeAudio. Some might not work (bluetooth)
+    disconnect-renderer     - Disconnect any external player from MoodeAudio.
     mute                    - Toggle mute
     vol_up  : int value     - Increase volume by 'value'    (0-100)
     vol_dn  : int value     - Decrease volume by 'value'    (0-100)
-    seek  : int value       - Seek forward or backwards by 'value' seconds
-    playlist  : str value   - Clear play a playlist
+    playlist  : str value   - Clear play a playlist or other library entry
     radio  : str value      - Clear play a radio
     
     # Custom WEB api command
     custom : str value : dict data
     
 **Note:** By default script will try to disconnect any external player (renderer) that is currently connected but if that fails (see <code>disconnect-renderer</code>) command execution will continue anyway.
+
+### Playlist
+Command <code>playlist</code> supports library paths:
+
+      "1": {
+        "global": {
+          "target": "moode",
+          "command": "playlist",
+          "value": "NAS/HomeServer/Music"
+        }
+      }
     
 ### Custom commands
 You can send any command that is not defined above, but you have to take care of some things yourself.
@@ -101,7 +111,7 @@ You can send any command that is not defined above, but you have to take care of
       }
 
 # Spotify
-Enabled only when Spotify is correctly configured and user was authorized. Script will read device name from MoodeAudio config and try to locate that device in Spotify.
+Enabled only when Spotify is correctly configured and user was authorized. Spotify rendered has to be enabled in Moode settings and running. Script will read device name from Moode config and try to locate that device in Spotify.
 
 Available commands are:
 
@@ -120,6 +130,18 @@ Available commands are:
     album  : str value      - Load a user saved album by name
     
 Most commands will only work when Spotify is already active on your device. <code>playlist</code> and <code>album</code> will force connection and playback regardless of current context.
+    
+### Albums and Playlists
+By default Spotify API always starts playing a first element from playlist/album. You can force shuffled playback by adding <code>"shuffled": true</code> to config.
+
+      "9": {
+        "global": {
+          "target": "spotify",
+          "command": "playlist",
+          "value": "LOTR",
+          "shuffled": true
+        }
+      }
 
 # Bluetooth
 Possible when Moode is acting as bluetooth speaker. Script will try to read the name of the first connected BT player and execute commands on it.
