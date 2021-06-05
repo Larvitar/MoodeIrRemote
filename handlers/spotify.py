@@ -95,7 +95,7 @@ class SpotifyHandler(BaseActionHandler):
         command = command_dict['command']
 
         device_name = MoodeHandler().read_cfg_system()['spotifyname']
-        if device_name != self.device_name:
+        if device_name != self.device_name or not self.device_id:
             self.device_name = device_name
             self.device_id = None
             self.device_id = self._get_id(self.device_name)
@@ -113,6 +113,9 @@ class SpotifyHandler(BaseActionHandler):
 
         if not device_status['is_active'] and command not in self.allowed_inactive:
             return
+
+        if not device_status['is_active']:
+            self.spotify.transfer_playback(self.device_id)
 
         current = self.spotify.current_playback()
 
@@ -205,6 +208,5 @@ class SpotifyHandler(BaseActionHandler):
         albums = self.spotify.current_user_saved_albums()
         for album in albums['items']:
             if album['album']['name'] == name:
-                print(album['album'], album['album']['total_tracks'])
                 return album['album']['uri'], album['album']['total_tracks']
         return None, None
