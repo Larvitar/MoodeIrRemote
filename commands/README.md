@@ -75,6 +75,7 @@ Commands that can be run using Moode Web API. Supported commands are:
     previous                - Previous song
     random                  - Toggle 'random' option
     repeat                  - Toggle 'repeat' option
+    fav_current_item        - Toggle 'favorite' state of currently playing item
     disconnect-renderer     - Disconnect any external player from MoodeAudio.
     mute                    - Toggle mute
     vol_up  : int value     - Increase volume by 'value'    (0-100)

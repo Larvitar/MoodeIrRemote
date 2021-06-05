@@ -2,6 +2,7 @@ from handlers.base_handler import BaseActionHandler
 from typing import Optional
 from time import sleep, time
 from logging import getLogger
+from urllib.parse import quote
 import json
 import requests
 
@@ -87,11 +88,8 @@ class MoodeHandler(BaseActionHandler):
             assert data
             response = requests.post(self.base_url + command, data=data)
 
-        if response:
-            if response.status_code == 200:
-                self.logger.debug(f'{response.status_code}: {response.content}')
-            else:
-                self.logger.error(f'{response.status_code}: {response.content}')
+        if response and response.status_code != 200:
+            self.logger.error(f'{response.status_code}: {response.content}')
 
         return response
 
@@ -131,6 +129,15 @@ class MoodeHandler(BaseActionHandler):
             self.disconnect_renderer(desired_state='moode')
         elif command == 'mute':
             self._send_command('GET', '?cmd=vol.sh+mute')
+        elif command == 'fav_current_item':
+            response = self._send_command('GET', 'moode.php?cmd=playlist')
+            if response and response.status_code == 200:
+                playlist = json.loads(response.content)
+                if playlist and isinstance(playlist, list) and len(playlist) < int(current_status['song']):
+                    playlist_element = playlist[int(current_status['song'])]
+                    if isinstance(playlist_element, dict) and 'file' in playlist_element:
+                        self._send_command('GET', 'moode.php?cmd=addfav&favitem=' +
+                                           quote(playlist_element['file'], safe=''))
 
         # Commands with values
         elif command == 'vol_up':

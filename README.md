@@ -7,6 +7,56 @@ Simple project designed to help with IR remote setup for MoodeAudio.
 3. Shell commands
 4. BT mode volume control
 
+# Requirements
+
+1. pigpio
+
+    pigpio has to be running. Remember that if you're using and I2S sound device (HiFiBerry boards etc.) you HAVE to run pigpio with <code>-t0</code> argument. See [pigpio/#152](https://github.com/joan2937/pigpio/issues/152) for more information.
+    
+        [Unit]
+        Description=Pigpio daemon
+        
+        [Service]
+        Type=forking
+        PIDFile=pigpio.pid
+        ExecStart=/usr/local/bin/pigpiod -t0
+        
+        [Install]
+        WantedBy=multi-user.target
+        
+    [pigpio/util](https://github.com/joan2937/pigpio/tree/master/util)
+
+2. An IR receiver connected to one of GPIO ports and a remote controller matching this receiver.
+
+3. Python requirements.
+        
+        sudo python3 -m pip install -r requirements.txt
+
+# Installation
+
+1. git clone
+    
+2. install req
+
+3. Systemd service:
+
+        [Unit]
+        Description=MoodeIrRemote
+        After=pigpiod.service
+        
+        [Service]
+        Type=Idle
+        ExecStart=/usr/bin/python3 /home/pi/MoodeIrRemote/mpd_control.py
+        
+        [Install]
+        WantedBy=multi-user.target
+        
+    And start it
+
+        sudo systemctl daemon-reload
+        sudo systemctl start moode_ir.service
+        sudo systemctl enable moode_ir.service
+
 # IR Setup
 TODO
 
