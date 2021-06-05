@@ -1,4 +1,5 @@
 {
+  "log_level": "INFO",
   "remotes": [],
   "ir_gpio_pin":  24,
   "spotify": {

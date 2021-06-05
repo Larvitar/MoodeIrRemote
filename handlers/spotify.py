@@ -5,6 +5,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
 from time import time, sleep
 from typing import Dict
+from logging import getLogger
 
 
 SCOPE = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing',
@@ -47,12 +48,14 @@ class SpotifyHandler(BaseActionHandler):
     require_value = ['vol_up', 'vol_dn', 'seek', 'playlist', 'album']
 
     def __init__(self, config: Dict):
+        self.logger = getLogger('MoodeIrController.SpotifyHandler')
+
         self.device_id = None
         self.device_name = None
 
         if {'client_id', 'client_secret', 'redirect_uri', 'listen_ip'} <= config.keys() or \
                 False in [bool(value) for value in config.values()]:
-            print('ERROR')
+            self.logger.error('Spotify config is missing')
             return
 
         self.spotify_auth = AuthHandler(
@@ -70,7 +73,7 @@ class SpotifyHandler(BaseActionHandler):
             self.device_name = MoodeHandler().read_cfg_system()['spotifyname']
             self.device_id = self._get_id(self.device_name)
         except TimeoutError as e:
-            print(e)
+            self.logger.exception(e)
 
         self.spotify_auth.initiated = True
         self.last_volume = 0
@@ -95,14 +98,14 @@ class SpotifyHandler(BaseActionHandler):
             self.device_id = self._get_id(self.device_name)
 
         if not self.device_id:
-            # Spotify was not authenticated
+            self.logger.debug('Spotify is not authenticated')
             return
 
         MoodeHandler().disconnect_renderer(desired_state='spotify')
 
         device_status = self._get_device_status()
         if not device_status:
-            print('ERROR')
+            self.logger.error('Error when reading device ID')
             return
 
         if not device_status['is_active'] and command not in self.allowed_inactive:
@@ -148,19 +151,21 @@ class SpotifyHandler(BaseActionHandler):
         elif command == 'seek':
             self.spotify.seek_track(int(current['progress_ms']) + int(command_dict['value']), self.device_id)
         elif command in ['playlist', 'album']:
-            if command == '':
+            if command == 'playlist':
                 uri = self._find_playlist(command_dict['value'])
             else:
                 uri = self._find_user_saved_album(command_dict['value'])
 
             if uri:
+                self.spotify.start_playback(self.device_id, uri)
+
                 if 'shuffled' in command_dict:
                     self.spotify.shuffle(command_dict['shuffled'], self.device_id)
 
-                self.spotify.start_playback(self.device_id, uri)
-
                 if 'shuffled' in command_dict and command_dict['shuffled']:
-                    # Easiest method to make sure first track is random
+                    # Easiest method i found to make sure first track is random
+                    self.spotify.shuffle(not command_dict['shuffled'], self.device_id)
+                    self.spotify.shuffle(command_dict['shuffled'], self.device_id)
                     self.spotify.next_track(self.device_id)
 
     def _get_id(self, device_name):

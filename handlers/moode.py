@@ -1,6 +1,7 @@
 from handlers.base_handler import BaseActionHandler
 from typing import Optional
 from time import sleep
+from logging import getLogger
 import json
 import requests
 
@@ -8,9 +9,10 @@ import requests
 class MoodeHandler(BaseActionHandler):
 
     # List of command that require a value
-    require_value = ['vol_up', 'vol_dn', 'playlist', 'radio']
+    require_value = ['vol_up', 'vol_dn', 'playlist', 'radio', 'custom']
 
     def __init__(self):
+        self.logger = getLogger('MoodeIrController.MoodeHandler')
         self.base_url = 'http://localhost/command/'
         self.renderers = {
             'rbactive': 'roonbridge',
@@ -65,6 +67,7 @@ class MoodeHandler(BaseActionHandler):
             response = requests.post(self.base_url + 'moode.php?cmd=disconnect-renderer',
                                      data={'job': self.svc_map[active_renderer]})
 
+            # TODO: Check sysconfig instead
             sleep(5)    # Wait for device to become available
 
             return response
@@ -127,4 +130,7 @@ class MoodeHandler(BaseActionHandler):
                 response = requests.post(self.base_url + command_dict['value'])
 
         if response:
-            print(f'{response.status_code}: {response.content}')
+            if response.status_code == 200:
+                self.logger.debug(f'{response.status_code}: {response.content}')
+            else:
+                self.logger.error(f'{response.status_code}: {response.content}')

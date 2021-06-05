@@ -9,7 +9,7 @@ from pprint import pformat
 from typing import Optional, List, Dict
 from os import path
 from copy import deepcopy
-import traceback
+from logging import getLogger, StreamHandler, Formatter
 import json
 import sys
 
@@ -23,6 +23,7 @@ class Config(object):
         self.ir_gpio_pin: Optional[int] = None
         self.remotes: List[str] = []
         self.spotify: Dict[str, str] = {}
+        self.log_level = "INFO"
 
     def load(self):
         with open(path.join(DIR, 'config.json')) as file:
@@ -42,6 +43,9 @@ class IrHandler(object):
         self.config: Config = Config()
         self.config.load()
 
+        self.logger = getLogger('MoodeIrController')
+        self._logger_init()
+
         self.keymap: Dict[str, List] = dict()
         self.commands: Dict[str, Dict] = dict()
 
@@ -56,6 +60,17 @@ class IrHandler(object):
             self.handlers: Dict[str, BaseActionHandler] = {}
 
         self.load_commands()
+
+    def _logger_init(self):
+        self.logger.setLevel("DEBUG")
+        formatter = Formatter("%(asctime)s - %(name)s:%(levelname)s - %(message)s")
+
+        stream = StreamHandler()
+        stream.setLevel(self.config.log_level)
+        stream.setFormatter(formatter)
+
+        self.logger.addHandler(stream)
+        # TODO: File handler
 
     def call(self, action: dict):
         renderer = MoodeHandler().get_active_renderer()
@@ -74,10 +89,11 @@ class IrHandler(object):
             if command_dict['target'] in self.handlers:
                 handler = self.handlers[command_dict['target']]
                 try:
+                    self.logger.debug(f"Running command {command_dict}")
                     handler.call(command_dict)
                 except Exception as e:
                     # Do not fail script on exception
-                    print(traceback.format_exc())
+                    self.logger.exception(e)
 
     def verify_commands(self):
 
@@ -119,43 +135,46 @@ class IrHandler(object):
                     self.commands.update({key: value})
 
     @staticmethod
-    def _parse_code(_code):
+    def _parse_code(code):
         """
-        Parse received code
-        :return:
+        Parse received code to a json compatible format
+
+        :param code: list
+        :return: dict
         """
 
-        if not _code:
+        if not code:
             return
 
-        if isinstance(_code, list):
-            _code = _code[0]
+        if isinstance(code, list):
+            code = code[0]
 
-        if isinstance(_code, dict):
-            if not ({'data', 'preamble', 'postamble'} < set(_code.keys())):
+        if isinstance(code, dict):
+            if not ({'data', 'preamble', 'postamble'} < set(code.keys())):
                 # Required fields
                 return
 
-            if not isinstance(_code['data'], bytes):
+            if not isinstance(code['data'], bytes):
                 return
 
-            _code['data'] = _code['data'].hex()
+            code['data'] = code['data'].hex()
             keys_to_remove = ['gap', 'timebase']
             for key in keys_to_remove:
-                if key in _code:
-                    del _code[key]
+                if key in code:
+                    del code[key]
 
-            for key, value in _code.items():
+            for key, value in code.items():
                 if isinstance(value, set) or isinstance(value, tuple):
-                    _code[key] = list(value)
+                    code[key] = list(value)
 
-            return _code
+            return code
 
     def _record_key(self):
         while True:
             code = decode(receive(self.config.ir_gpio_pin))
             parsed = self._parse_code(code)
             if parsed:
+                self.logger.debug(f'Received code {parsed}')
                 return parsed
 
     def _record(self):
@@ -223,14 +242,14 @@ class IrHandler(object):
         self.load_keymap()
 
         if not self.keymap:
-            print("Keymap is empty! Please run 'setup' first.")
+            self.logger.error("Keymap is empty! Please run 'setup' first.")
             sys.exit(1)
 
         diff = set(self.commands.keys()) - set(self.keymap.keys())
         if diff:
-            print(f'Some keys are missing from setup! \n{pformat(diff)}')
+            self.logger.info(f'Some keys are missing from setup! \n{pformat(diff)}')
 
-        print('Monitoring started')
+        self.logger.info('Monitoring started')
         while True:
             code = self._record_key()
 
