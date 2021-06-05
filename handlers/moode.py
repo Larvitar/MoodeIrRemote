@@ -133,7 +133,7 @@ class MoodeHandler(BaseActionHandler):
             response = self._send_command('GET', 'moode.php?cmd=playlist')
             if response and response.status_code == 200:
                 playlist = json.loads(response.content)
-                if playlist and isinstance(playlist, list) and len(playlist) < int(current_status['song']):
+                if playlist and isinstance(playlist, list) and len(playlist) > int(current_status['song']):
                     playlist_element = playlist[int(current_status['song'])]
                     if isinstance(playlist_element, dict) and 'file' in playlist_element:
                         self._send_command('GET', 'moode.php?cmd=addfav&favitem=' +
