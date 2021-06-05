@@ -6,6 +6,7 @@ from spotipy import Spotify
 from time import time, sleep
 from typing import Dict
 from logging import getLogger
+from random import randint
 
 
 SCOPE = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing',
@@ -116,10 +117,10 @@ class SpotifyHandler(BaseActionHandler):
         current = self.spotify.current_playback()
 
         if command == 'toggle':
-            if current['is_playing']:
-                self.spotify.pause_playback(self.device_id)
-            else:
+            if not current or not current['is_playing']:
                 self.spotify.start_playback(self.device_id)
+            else:
+                self.spotify.pause_playback(self.device_id)
         elif command == 'pause':
             self.spotify.pause_playback(self.device_id)
         elif command == 'play':
@@ -132,7 +133,8 @@ class SpotifyHandler(BaseActionHandler):
         elif command == 'previous':
             self.spotify.previous_track(self.device_id)
         elif command == 'shuffle':
-            self.spotify.shuffle(not current['shuffle_state'], self.device_id)
+            if current:
+                self.spotify.shuffle(not current['shuffle_state'], self.device_id)
         elif command == 'repeat':
             repeat_values = ["track", "context", "off"]
             new = (repeat_values.index(current['repeat_state']) + 1) % 3
@@ -154,21 +156,20 @@ class SpotifyHandler(BaseActionHandler):
             self.spotify.seek_track(int(current['progress_ms']) + int(command_dict['value']), self.device_id)
         elif command in ['playlist', 'album']:
             if command == 'playlist':
-                uri = self._find_playlist(command_dict['value'])
+                uri, count = self._find_playlist(command_dict['value'])
             else:
-                uri = self._find_user_saved_album(command_dict['value'])
+                uri, count = self._find_user_saved_album(command_dict['value'])
 
             if uri:
-                self.spotify.start_playback(self.device_id, uri)
+                # None -> do not change, False -> disable, True -> enabled
+                shuffle_state = False if not current else current['shuffle_state']
+                shuffled = shuffle_state if 'shuffled' not in command_dict else command_dict['shuffled']
 
-                if 'shuffled' in command_dict:
-                    self.spotify.shuffle(command_dict['shuffled'], self.device_id)
+                if shuffled != shuffle_state:
+                    self.spotify.shuffle(shuffled, self.device_id)
+                offset = randint(0, count - 1) if shuffled else 0
 
-                if 'shuffled' in command_dict and command_dict['shuffled']:
-                    # Easiest method i found to make sure first track is random
-                    self.spotify.shuffle(not command_dict['shuffled'], self.device_id)
-                    self.spotify.shuffle(command_dict['shuffled'], self.device_id)
-                    self.spotify.next_track(self.device_id)
+                self.spotify.start_playback(self.device_id, context_uri=uri, offset={"position": offset})
 
     def _get_id(self, device_name):
         response = self.spotify.devices()
@@ -196,13 +197,14 @@ class SpotifyHandler(BaseActionHandler):
         playlists = self.spotify.current_user_playlists()
         for playlist in playlists['items']:
             if playlist['name'] == name:
-                return playlist['uri']
-        return None
+                return playlist['uri'], playlist['tracks']['total']
+        return None, None
 
     def _find_user_saved_album(self, name):
         # TODO: Expand to multiple pages
         albums = self.spotify.current_user_saved_albums()
         for album in albums['items']:
             if album['album']['name'] == name:
-                return album['album']['uri']
-        return None
+                print(album['album'], album['album']['total_tracks'])
+                return album['album']['uri'], album['album']['total_tracks']
+        return None, None
