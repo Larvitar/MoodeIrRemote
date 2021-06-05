@@ -147,14 +147,21 @@ class SpotifyHandler(BaseActionHandler):
             self.spotify.volume(max(device_status['volume_percent'] - int(command_dict['value']), 0), self.device_id)
         elif command == 'seek':
             self.spotify.seek_track(int(current['progress_ms']) + int(command_dict['value']), self.device_id)
-        elif command == 'playlist':
-            playlist_uri = self._find_playlist(command_dict['value'])
-            if playlist_uri:
-                self.spotify.start_playback(self.device_id, playlist_uri)
-        elif command == 'album':
-            album_uri = self._find_user_saved_album(command_dict['value'])
-            if album_uri:
-                self.spotify.start_playback(self.device_id, album_uri)
+        elif command in ['playlist', 'album']:
+            if command == '':
+                uri = self._find_playlist(command_dict['value'])
+            else:
+                uri = self._find_user_saved_album(command_dict['value'])
+
+            if uri:
+                if 'shuffled' in command_dict:
+                    self.spotify.shuffle(command_dict['shuffled'], self.device_id)
+
+                self.spotify.start_playback(self.device_id, uri)
+
+                if 'shuffled' in command_dict and command_dict['shuffled']:
+                    # Easiest method to make sure first track is random
+                    self.spotify.next_track(self.device_id)
 
     def _get_id(self, device_name):
         response = self.spotify.devices()
