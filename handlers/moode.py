@@ -129,7 +129,7 @@ class MoodeHandler(BaseActionHandler):
             self.disconnect_renderer(desired_state='moode')
         elif command == 'mute':
             self._send_command('GET', '?cmd=vol.sh+mute')
-        elif command == 'fav_current_item':
+        elif command == 'fav-current-item':
             response = self._send_command('GET', 'moode.php?cmd=playlist')
             if response and response.status_code == 200:
                 playlist = json.loads(response.content)

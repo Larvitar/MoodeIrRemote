@@ -44,8 +44,6 @@ class AuthHandler(SpotifyOAuth):
 
 class SpotifyHandler(BaseActionHandler):
 
-    # List of commands allowed in inactive mode
-    allowed_inactive = ['playlist', 'album']
     # List of command that require a value
     require_value = ['vol_up', 'vol_dn', 'seek', 'playlist', 'album']
 
@@ -108,19 +106,17 @@ class SpotifyHandler(BaseActionHandler):
 
         device_status = self._get_device_status()
         if not device_status:
-            self.logger.error('Error when reading device ID')
-            return
-
-        if not device_status['is_active'] and command not in self.allowed_inactive:
+            self.logger.error('Error when reading device status')
             return
 
         if not device_status['is_active']:
-            self.spotify.transfer_playback(self.device_id)
+            self.spotify.transfer_playback(self.device_id, force_play=False)
+            sleep(1)
 
         current = self.spotify.current_playback()
 
         if command == 'toggle':
-            if not current or not current['is_playing']:
+            if not current['is_playing']:
                 self.spotify.start_playback(self.device_id)
             else:
                 self.spotify.pause_playback(self.device_id)
@@ -136,8 +132,7 @@ class SpotifyHandler(BaseActionHandler):
         elif command == 'previous':
             self.spotify.previous_track(self.device_id)
         elif command == 'shuffle':
-            if current:
-                self.spotify.shuffle(not current['shuffle_state'], self.device_id)
+            self.spotify.shuffle(not current['shuffle_state'], self.device_id)
         elif command == 'repeat':
             repeat_values = ["track", "context", "off"]
             new = (repeat_values.index(current['repeat_state']) + 1) % 3

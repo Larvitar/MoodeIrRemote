@@ -75,7 +75,7 @@ Commands that can be run using Moode Web API. Supported commands are:
     previous                - Previous song
     random                  - Toggle 'random' option
     repeat                  - Toggle 'repeat' option
-    fav_current_item        - Toggle 'favorite' state of currently playing item
+    fav-current-item        - Add currently playing item to 'Favorites'
     disconnect-renderer     - Disconnect any external player from MoodeAudio.
     mute                    - Toggle mute
     vol_up  : int value     - Increase volume by 'value'    (0-100)
@@ -112,7 +112,7 @@ You can send any command that is not defined above, but you have to take care of
       }
 
 # Spotify
-Enabled only when Spotify is correctly configured and user was authorized. Spotify rendered has to be enabled in Moode settings and running. You also have to manually connect your device using Spotify at least once before it becomes available in Spotify API. 
+Enabled only when Spotify is correctly configured and user was authorized. Spotify renderer has to be enabled in Moode settings and running. You also have to manually connect your device using Spotify at least once before it becomes available in Spotify API. 
 
 Script will read device name from Moode config and try to locate that device in Spotify.
 
@@ -120,29 +120,35 @@ Available commands are:
 
     play
     pause
-    toggle                  - Play/Pause
-    next                    - Next song
-    previous                - Previous song
-    shuffle                 - Toggle 'shuffle' option
-    repeat                  - Change 'repeat' setting: track --> context --> off
-    mute                    - Toggle mute
-    vol_up  : int value     - Increase volume by 'value'    (0-100)
-    vol_dn  : int value     - Decrease volume by 'value'    (0-100)
-    seek  : int value       - Seek forward or backwards by 'value' seconds
-    playlist  : str value   - Load a user playlist by name
-    album  : str value      - Load a user saved album by name
-    
-Most commands will only work when Spotify is already active on your device. <code>playlist</code> and <code>album</code> will force connection and playback regardless of current context.
+    toggle                                          - Play/Pause
+    next                                            - Next song
+    previous                                        - Previous song
+    shuffle                                         - Toggle 'shuffle' option
+    repeat                                          - Toggle 'repeat' setting: track --> context --> off
+    mute                                            - Toggle mute
+    vol_up : int value                              - Increase volume by 'value'    (0-100)
+    vol_dn : int value                              - Decrease volume by 'value'    (0-100)
+    seek : int value                                - Seek forward or backwards by 'value' miliseconds
+    playlist : str value : <bool shuffled>          - Load a user playlist by name
+    album : str value : <bool shuffled>             - Load a user saved album by name
     
 ### Albums and Playlists
-By default Spotify API always starts playing a first element from playlist/album. You can force shuffled playback by adding <code>"shuffled": true</code> to config.
+Optional <code>shuffled</code> setting available. Set to <code>true</code> to always start playing at random, <code>false</code> to always play in order. If not set script will read current <code>shuffled</code> state from Spotify.
 
+      "8": {
+        "global": {
+          "target": "spotify",
+          "command": "playlist",
+          "value": "Touhou Project",
+          "shuffled": true
+        }
+      }
       "9": {
         "global": {
           "target": "spotify",
           "command": "playlist",
-          "value": "LOTR",
-          "shuffled": true
+          "value": "Lord of the Rings Soundtrack",
+          "shuffled": false
         }
       }
 
