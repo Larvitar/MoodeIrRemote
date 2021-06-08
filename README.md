@@ -65,7 +65,7 @@ Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR
 **Note:** Remember to disable the service before running the script manually for tests/configuration. 
 
 # IR Setup
-What you need is an IR receiver (i.e. TSOP4836) and a remote working on the same frequency (36kHz). Connect it to power and RPi GPIO pin as instructed in receivers datasheet. In most cases 2 pins will have to be connected to 5V/GND and the 3rd one to GPIO (usually requiring additional capacitor and resistor).
+What you need is an IR receiver (i.e. TSOP4836) and a remote working on the same frequency (36kHz in this example). Connect it to power and RPi GPIO pin as instructed in receivers datasheet. In most cases 2 pins will have to be connected to 5V/GND and the 3rd one to GPIO (usually requiring additional capacitor and resistor).
 
 You can test your setup in command line using [PiIR#command-line-usage](https://github.com/ts1/PiIR#command-line-usage).
 
