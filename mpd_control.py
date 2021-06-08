@@ -156,8 +156,10 @@ class IrHandler(object):
             with open(path.join(DIR, 'commands', 'custom.json'), 'r') as commands_file:
                 custom_commands: Dict = json.load(commands_file)
                 for key, value in custom_commands.items():
-                    assert key not in self.commands, f'Command "{key}" is duplicated!'
-                    self.commands.update({key: value})
+                    if key in self.commands:
+                        self.logger.warning(
+                            f'"{key}" is duplicated. Value from "custom.json" replaces value from "base.json"!')
+                    self.commands[key] = value
         else:
             self.logger.warning('custom.json file not found!')
 
