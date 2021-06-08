@@ -89,6 +89,8 @@ Commands that can be run using Moode Web API. Supported commands are:
 **Note:** By default script will try to disconnect any external player (renderer) that is currently connected but if that fails (see <code>disconnect-renderer</code>) command execution will continue anyway.
 
 ### Playlist
+Optional <code>shuffled</code> (random) setting available. Set to <code>true</code> to always start playing at random, <code>false</code> to always play in order. If not set script will read current <code>random</code> state from Moode.
+
 Command <code>playlist</code> supports library paths:
 
       "1": {
@@ -96,6 +98,7 @@ Command <code>playlist</code> supports library paths:
           "target": "moode",
           "command": "playlist",
           "value": "NAS/HomeServer/Music"
+          "shuffled": true
         }
       }
     
@@ -118,6 +121,7 @@ Script will read device name from Moode config and try to locate that device in 
 
 Available commands are:
 
+    transfer-playback                               - Switch to Spotify, but do not start playback
     play
     pause
     toggle                                          - Play/Pause
@@ -158,5 +162,54 @@ Possible when Moode is acting as bluetooth speaker. Script will try to read the 
 Available commands are:
 
     mute                    - Toggle mute
-    vol_up  : int value     - Increase volume by 'value'    (0-100)
-    vol_dn  : int value     - Decrease volume by 'value'    (0-100)
+    vol_up : int value     - Increase volume by 'value'    (0-100)
+    vol_dn : int value     - Decrease volume by 'value'    (0-100)
+    
+# Examples
+
+1. Same button for different playlists on Spotify/Moode
+
+    First you'll need some buttons to switch between Spotify and Moode:
+            
+          # Switch to playback from Moode
+          "red": {
+            "global": {
+              "target": "moode",
+              "command": "disconnect-renderer"
+            }
+          }
+          # Switch to playback from Spotify
+          "green": {
+            "global": {
+              "target": "spotify",
+              "command": "transfer-playback"
+            }
+          },
+          # Or a single button to switch back and forth
+          "source": {
+            "moode": {
+              "target": "spotify",
+              "command": "transfer-playback"
+            },
+            "spotify": {
+              "target": "moode",
+              "command": "disconnect-renderer"
+            }
+          }
+          
+    Now configure <code>1</code> to start different playlists depending on what's currently active:
+    
+        "1": {
+            "spotify": {
+              "target": "spotify",
+              "command": "playlist",
+              "value": "SpotifyList1"
+            },
+            "global": {
+              "target": "moode",
+              "command": "playlist",
+              "value": "MpdList2"
+            }
+          }
+    
+   When Spotify is active <code>SpotifyList1</code> will start playing, <code>MpdList2</code> otherwise.

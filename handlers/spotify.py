@@ -111,6 +111,8 @@ class SpotifyHandler(BaseActionHandler):
 
         if not device_status['is_active']:
             self.spotify.transfer_playback(self.device_id, force_play=False)
+            if command == 'transfer-playback':
+                return
             sleep(1)
 
         current = self.spotify.current_playback()

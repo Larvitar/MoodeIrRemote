@@ -145,6 +145,9 @@ class MoodeHandler(BaseActionHandler):
         elif command == 'vol_dn':
             self._send_command('GET', '?cmd=vol.sh+dn+{value}'.format(value=command_dict['value']))
         elif command == 'playlist':
+            if 'shuffled' in command_dict and command_dict['shuffled'] != bool(int(current_status['random'])):
+                self._send_command('GET', 'index.php?cmd=random+{value}'
+                                   .format(value=1 if command_dict['shuffled'] else 0))
             self._send_command('POST', 'moode.php?cmd=clear_play_item', data={'path': command_dict['value']})
         elif command == 'radio':
             self._send_command('POST', 'moode.php?cmd=clear_play_item',

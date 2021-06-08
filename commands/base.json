@@ -5,7 +5,7 @@
       "command": "poweroff"
     }
   },
-  "ok": {
+  "play/pause": {
     "moode": {
       "target": "moode",
       "command": "toggle"
