@@ -1,17 +1,17 @@
 # MoodeIrRemote
-Simple project designed to help with IR remote setup for MoodeAudio.
+Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR remote setup for MoodeAudio.
 
 # Supports
 1. Moode Web API
-2. Spotify control
+2. Spotify
 3. Shell commands
-4. BT mode volume control
+4. BT volume control
 
 # Requirements
 
 1. pigpio
 
-    pigpio has to be running. Remember that if you're using and I2S sound device (HiFiBerry boards etc.) you HAVE to run pigpio with <code>-t0</code> argument. See [pigpio/#152](https://github.com/joan2937/pigpio/issues/152) for more information.
+    pigpiod has to be running. Remember that if you're using a sound overlay (HiFiBerry boards etc.) you HAVE to run pigpio with <code>-t0</code> argument. See [pigpio/#152](https://github.com/joan2937/pigpio/issues/152) for more information.
     
         [Unit]
         Description=Pigpio daemon
@@ -26,19 +26,22 @@ Simple project designed to help with IR remote setup for MoodeAudio.
         
     [pigpio/util](https://github.com/joan2937/pigpio/tree/master/util)
 
-2. An IR receiver connected to one of GPIO ports and a remote controller matching this receiver.
+2. An IR receiver connected to one of GPIO ports and a remote controller matching this receiver - [IR Setup](#IR Setup).
 
-3. Python requirements.
-        
-        sudo python3 -m pip install -r requirements.txt
+3. Python3 and a few Python libraries - [requirements.txt](requirements.txt).
 
 # Installation
 
-1. git clone
-    
-2. install req
+1. Clone this repository to your RPi. You might want to set <code>700</code> permission since Spotify credentials will be stored there.
 
-3. Systemd service:
+        git clone https://github.com/Larvitar/MoodeIrRemote
+        chmod -R 700 MoodeIrRemote
+    
+2. Install requirements:
+        
+        sudo python3 -m pip install -r requirements.txt
+
+3. Create a systemd service <code>/etc/systemd/system/moode_ir_remote.service</code> :
 
         [Unit]
         Description=MoodeIrRemote
@@ -51,14 +54,20 @@ Simple project designed to help with IR remote setup for MoodeAudio.
         [Install]
         WantedBy=multi-user.target
         
-    And start it
+4. And start it:
 
         sudo systemctl daemon-reload
-        sudo systemctl start moode_ir.service
-        sudo systemctl enable moode_ir.service
+        sudo systemctl start moode_ir_remote
+        sudo systemctl enable moode_ir_remote
+        
+    You can check if script started successfully by running <code>systemctl status moode_ir_remote</code>
+    
+**Note:** Remember to disable the service before running the script manually for tests/configuration. 
 
 # IR Setup
-TODO
+What you need is an IR receiver (i.e. TSOP4836) and a remote working on the same frequency (36kHz). Connect it to power and RPi GPIO pin as instructed in receivers datasheet. In most cases 2 pins will have to be connected to 5V/GND and the 3rd one to GPIO (usually requiring additional capacitor and resistor).
+
+You can test your setup in command line using [PiIR#command-line-usage](https://github.com/ts1/PiIR#command-line-usage).
 
 # Configuration
 Configuration is stored in <code>config.json</code>
@@ -91,10 +100,10 @@ Remotes configuration is stored in <code>keymaps/*.json</code> files. Run the sc
         Button "power"  (recorded: 1) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: n
         Button "ok"     (recorded: 0) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: r
                 Press the key again to verify
-        Button "ok"     (recorded: 0) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: e
+        Button "ok"     (recorded: 1) [(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: e
         Setup result: {....}
         
-You can run <code>Record</code> multiple times in order to assign multiple buttons to the same function (i.e. <code>Right</code> and <code>Channel Up</code> for <code>next song</code>).
+You can run <code>Record</code> multiple times in order to assign multiple buttons to the same function (i.e. <code>Right</code> and <code>ChannelUp</code> for <code>next song</code>).
         
 Script will scan through commands defined in <code>commands/base.json</code> and <code>commands/custom.json</code>. If you run <code>setup</code> on already existing keymap, you'll be able to update it.
 
@@ -129,9 +138,9 @@ Spotify Premium is required.
     1. In your app page click <code>EDIT SETTINGS</code>.
     2. Add address from <code>redirect_uri</code> in **Redirect URIs** section.
     
-4. You can start <code>mpd_control.py</code> now. If all Spotify settings were filled script should run a server at <code>http://moode.local:8888 </code>. 
+4. You can start <code>mpd_control.py</code> now. If all Spotify settings were filled script should run a server at <code>http://moode.local:8080 </code>. 
     1. Open this address in your browser and you'll be presented with a **Authorize with Spotify** button. Click it and allow your app to access to your Spotify account.
-    2. You should see **Authentication success** message.
+    2. You should see **Authentication success** message. Server on port <code>8080</code> will now be disabled.
     3. Spotify should now work properly. 
 
 **Note:** If any of spotify settings is not filled this setup process will be skipped.
@@ -154,6 +163,6 @@ Basic command config:
 Possible states are: <code>roonbridge</code>, <code>airplay</code>, <code>bluetooth</code>, <code>squeezelite</code>, <code>spotify</code>, <code>input</code>, <code>moode</code>, <code>global</code> (always)\
 Possible targets are: <code>bluetooth</code>, <code>spotify</code>, <code>moode</code>, <code>shell</code>
 
-**Note:** Only one command can be run at the same time. <code>global</code> will be run only if active player does not match any other command.
+**Note:** <code>global</code> will be run only if active player does not match any other command.
 
 See [commands](commands/README.md).
