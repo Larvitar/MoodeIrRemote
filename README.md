@@ -26,7 +26,7 @@ Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR
         
     [pigpio/util](https://github.com/joan2937/pigpio/tree/master/util)
 
-2. An IR receiver connected to one of GPIO ports and a remote controller matching this receiver - [IR Setup](#IR Setup).
+2. An IR receiver connected to one of GPIO ports and a remote controller matching this receiver - [IR Setup](#ir-setup).
 
 3. Python3 and a few Python libraries - [requirements.txt](requirements.txt).
 
