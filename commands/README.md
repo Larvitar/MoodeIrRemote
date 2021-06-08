@@ -70,18 +70,18 @@ Commands that can be run using Moode Web API. Supported commands are:
     reboot
     play
     pause
-    toggle                  - Play/Pause
-    next                    - Next song
-    previous                - Previous song
-    random                  - Toggle 'random' option
-    repeat                  - Toggle 'repeat' option
-    fav-current-item        - Add currently playing item to 'Favorites'
-    disconnect-renderer     - Disconnect any external player from MoodeAudio.
-    mute                    - Toggle mute
-    vol_up  : int value     - Increase volume by 'value'    (0-100)
-    vol_dn  : int value     - Decrease volume by 'value'    (0-100)
-    playlist  : str value   - Clear play a playlist or other library entry
-    radio  : str value      - Clear play a radio
+    toggle                                      - Play/Pause
+    next                                        - Next song
+    previous                                    - Previous song
+    random                                      - Toggle 'random' option
+    repeat                                      - Toggle 'repeat' option
+    fav-current-item                            - Add currently playing item to 'Favorites'
+    disconnect-renderer                         - Disconnect any external player from MoodeAudio.
+    mute                                        - Toggle mute
+    vol_up  : int value                         - Increase volume by 'value'    (0-100)
+    vol_dn  : int value                         - Decrease volume by 'value'    (0-100)
+    playlist  : str value : <bool shuffled>     - Clear play a playlist or other library entry
+    radio  : str value                          - Clear play a radio
     
     # Custom WEB api command
     custom : str value : dict data
