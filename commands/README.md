@@ -27,7 +27,7 @@ You can easily define a different command for different contexts (active players
         }
       }
       
-You can see examples of other commands already defined in <code>commands/base.json</code> and <code>commands/custom.json</code>
+You can see examples of other commands already defined in <code>commands/base.json</code> and <code>commands/example_custom.json</code>
 
 Possible states are: <code>roonbridge</code>, <code>airplay</code>, <code>bluetooth</code>, <code>squeezelite</code>, <code>spotify</code>, <code>input</code>, <code>moode</code>, <code>global</code> (always)\
 Possible targets are: <code>bluetooth</code>, <code>spotify</code>, <code>moode</code>, <code>shell</code>

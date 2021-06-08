@@ -115,6 +115,8 @@ Run script in test mode if you want to verify a keymap:
         Key "ok" received.
         Key "power" received.
         
+If the test was successful you can add <code>test_remote.json</code> to config in remotes list.
+        
 **Note:** Some remotes use 2 alternating codes for the same button. Script will try to recognize it and ask you to click it multiple times but if you run into any troubles just try running <code>Record</code> multiple times.
 
 **Note:** If by accident you assign same button to multiple functions (or if 2 remotes send same code for different buttons) script will only run the first action that matches that code.
@@ -150,7 +152,9 @@ Spotify Premium is required.
 **Note:** If Spotify authorization expires (password change, revoked app permissions etc.) script will drop all spotify commands and a restart will be required in order to run authorization process again.
 
 # Commands
-Basic command config:
+Buttons closely related to playback (<code>play</code>, <code>vol_up</code>, <code>next</code> etc.) are defined in <code>commands/base.json</code> and usually you won't have to change anything in there. Other commands (playlists, radios etc.) should be defined in <code>commands/custom.json</code> you should create yourself. You can see examples of possible commands in <code>commands/example_custom.json</code>. See [commands/README](commands/README.md) for more information.
+
+Example command config:
 
       "vol_up": {                   <-- Button name
         "moode": {                  <-- When this command can be run (currently active player)
@@ -164,5 +168,3 @@ Possible states are: <code>roonbridge</code>, <code>airplay</code>, <code>blueto
 Possible targets are: <code>bluetooth</code>, <code>spotify</code>, <code>moode</code>, <code>shell</code>
 
 **Note:** <code>global</code> will be run only if active player does not match any other command.
-
-See [commands](commands/README.md).

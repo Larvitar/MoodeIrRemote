@@ -37,11 +37,17 @@
     "global": {
       "target": "moode",
       "command": "playlist",
-      "value": "NAS/HomeServer/Music"
+      "value": "NAS/HomeServer/Music",
+      "shuffled": true
     }
   },
   "7": {
-
+    "global": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "Lord of the Rings Soundtrack",
+      "shuffled": false
+    }
   },
   "8": {
 
@@ -51,5 +57,21 @@
   },
   "0": {
 
+  },
+  "source": {
+    "moode": {
+      "target": "spotify",
+      "command": "transfer-playback"
+    },
+    "spotify": {
+      "target": "moode",
+      "command": "disconnect-renderer"
+    }
+  },
+  "red": {
+    "moode": {
+      "target": "moode",
+      "command": "fav-current-item"
+    }
   }
 }
