@@ -11,11 +11,14 @@ from os import path, makedirs
 from copy import deepcopy
 from logging import getLogger, StreamHandler, Formatter, basicConfig
 from logging.handlers import TimedRotatingFileHandler
+from requests.exceptions import ConnectionError
+from time import sleep, time
 import json
 import sys
 
 
 DIR = path.dirname(path.realpath(__file__))
+INIT_TIMEOUT = 120
 
 
 class Config(object):
@@ -56,6 +59,7 @@ class IrHandler(object):
         self.commands: Dict[str, Dict] = dict()
 
         if not self.test_mode:
+            self._wait_for_moode()
             self.handlers: Dict[str, BaseActionHandler] = {
                 'shell': ShellCommandsHandler(),
                 'spotify': SpotifyHandler(config=self.config.spotify, cache_path=path.join(DIR, '.cache')),
@@ -66,6 +70,24 @@ class IrHandler(object):
             self.handlers: Dict[str, BaseActionHandler] = {}
 
         self.load_commands()
+
+    @staticmethod
+    def _wait_for_moode():
+        start = time()
+        while True:
+            cfg = None
+            try:
+                cfg = MoodeHandler().read_cfg_system()
+            except ConnectionError:
+                pass
+
+            if cfg:
+                return
+
+            if time() - start > INIT_TIMEOUT:
+                raise TimeoutError("Timeout while waiting for Moode to initialize")
+
+            sleep(5)
 
     def _logger_init(self):
         self.logger.setLevel("DEBUG")
