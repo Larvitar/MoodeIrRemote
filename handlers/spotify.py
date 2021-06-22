@@ -162,14 +162,27 @@ class SpotifyHandler(BaseActionHandler):
 
             if uri:
                 # None -> do not change, False -> disable, True -> enabled
-                shuffle_state = False if not current else current['shuffle_state']
-                shuffled = shuffle_state if 'shuffled' not in command_dict else command_dict['shuffled']
+                desired_shuffle_state = command_dict.get('shuffled', None)
+                shuffled = desired_shuffle_state if desired_shuffle_state is not None \
+                    else current.get('shuffle_state', False)
 
-                if shuffled != shuffle_state:
-                    self.spotify.shuffle(shuffled, self.device_id)
-                offset = randint(0, count - 1) if shuffled else 0
-
-                self.spotify.start_playback(self.device_id, context_uri=uri, offset={"position": offset})
+                # librespot is broken
+                # 1. We have to toggle shuffle after start_playback otherwise librespot would not reset seed and we'd
+                #    have same "random" order everytime.
+                # 2. librespot always starts with first track from list so have to switch to next one.
+                #    We can't use "offset" because librespot just ignores every track before offset.
+                # 3. And finally we have to toggle "shuffle" again, otherwise track 1 would always be last on the list.
+                #
+                # It's still broken because librespot seems to only load 50 tracks at first and only shuffle those,
+                # then load another 50 tracks, and another but I have no idea how to workaround this.
+                # This whole code could be shortened to 2 lines if only librespot would fix its shuffle implementation.
+                self.spotify.shuffle(False, self.device_id)
+                self.spotify.start_playback(self.device_id, context_uri=uri)
+                if shuffled:
+                    self.spotify.shuffle(True, self.device_id)      # 1.
+                    self.spotify.next_track(self.device_id)         # 2.
+                    self.spotify.shuffle(False, self.device_id)     # 3.
+                    self.spotify.shuffle(True, self.device_id)
 
     def _get_id(self, device_name):
         response = self.spotify.devices()
