@@ -6,7 +6,6 @@ from spotipy import Spotify
 from time import time, sleep
 from typing import Dict
 from logging import getLogger
-from random import randint
 
 
 SCOPE = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing',
