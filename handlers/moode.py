@@ -68,8 +68,7 @@ class MoodeHandler(BaseActionHandler):
             response = self._send_command('POST', 'moode.php?cmd=disconnect-renderer',
                                           data={'job': self.svc_map[active_renderer]})
 
-            start_time = time()
-            while time() - start_time < 15:     # Max 15s
+            for _ in range(15):     # Max 15s
                 sleep(1)
                 if self.get_active_renderer() == 'moode':
                     break
