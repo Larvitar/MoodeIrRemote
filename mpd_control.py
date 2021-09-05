@@ -13,8 +13,10 @@ from logging import getLogger, StreamHandler, Formatter, basicConfig
 from logging.handlers import TimedRotatingFileHandler
 from requests.exceptions import ConnectionError
 from time import sleep, time
+from executor import Executor
 import json
 import sys
+import atexit
 
 
 DIR = path.dirname(path.realpath(__file__))
@@ -58,31 +60,41 @@ class IrHandler(object):
         self.keymap: Dict[str, Optional[List, str]] = dict()
         self.commands: Dict[str, Dict] = dict()
 
+        self.handlers: Dict[str, BaseActionHandler] = {}
         if not self.test_mode:
             self._wait_for_moode()
-            self.handlers: Dict[str, BaseActionHandler] = {
+            self.handlers = {
                 'shell': ShellCommandsHandler(),
                 'spotify': SpotifyHandler(config=self.config.spotify, cache_path=path.join(DIR, '.cache')),
                 'moode': MoodeHandler(),
                 'bluetooth': BluetoothHandler()
             }
-        else:
-            self.handlers: Dict[str, BaseActionHandler] = {}
 
         self.load_commands()
+        self.executor = Executor(get_handler=self.get_handler,
+                                 get_renderer=MoodeHandler().get_active_renderer)
+
+        self._stop()
+
+    def _stop(self):
+        atexit.register(self.executor.stop)
+        if 'spotify' in self.handlers:
+            atexit.register(self.handlers['spotify'].stop)
+
+    def get_handler(self, handler_name):
+        if handler_name in self.handlers:
+            return self.handlers[handler_name]
+        return None
 
     @staticmethod
     def _wait_for_moode():
         start = time()
         while True:
-            cfg = None
             try:
-                cfg = MoodeHandler().read_cfg_system()
+                if MoodeHandler().read_cfg_system():
+                    return
             except ConnectionError:
                 pass
-
-            if cfg:
-                return
 
             if time() - start > INIT_TIMEOUT:
                 raise TimeoutError("Timeout while waiting for Moode to initialize")
@@ -116,29 +128,6 @@ class IrHandler(object):
                     level=self.config.logging["global_level"])
         if self.config.logging["log_all_to_file"]:
             getLogger().addHandler(file_handler)
-
-    def call(self, action: dict):
-        renderer = MoodeHandler().get_active_renderer()
-        if renderer in action.keys():
-            commands = action[renderer]
-        elif 'global' in action.keys():
-            commands = action['global']
-        else:
-            return
-
-        if not isinstance(commands, list):
-            commands = [commands]
-
-        for command_dict in commands:
-
-            if command_dict['target'] in self.handlers:
-                handler = self.handlers[command_dict['target']]
-                try:
-                    self.logger.debug(f"Running command {command_dict}")
-                    handler.call(command_dict)
-                except Exception as e:
-                    # Do not fail script on exception
-                    self.logger.exception(e)
 
     def verify_commands(self):
 
@@ -330,7 +319,7 @@ class IrHandler(object):
             except KeyError:
                 continue
 
-            self.call(command)
+            self.executor.enqueue(command)
 
 
 if __name__ == '__main__':

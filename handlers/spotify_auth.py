@@ -74,3 +74,6 @@ class AuthServer(object):
         if self.thread:
             self.thread.join()
             self.thread = None
+
+    def __del__(self):
+        self.close()

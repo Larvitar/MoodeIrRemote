@@ -78,6 +78,10 @@ class SpotifyHandler(BaseActionHandler):
         self.spotify_auth.initiated = True
         self.last_volume = 0
 
+    def stop(self):
+        if self.spotify_auth:
+            self.spotify_auth.auth_server.close()
+
     def verify(self, command_dict):
         assert 'command' in command_dict, f'\'command\' missing from {command_dict}'
         assert isinstance(command_dict['command'], str), f'\'{command_dict["command"]}\' ' \
