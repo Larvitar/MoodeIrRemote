@@ -1,62 +1,150 @@
 {
   "1": {
-    "moode": {
-      "target": "shell",
-      "command": ["mpc clear", "mpc load \"Fate Series OST\"", "mpc play"]
+    "spotify": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "JRock, JPop, Anime track",
+      "shuffled": true
+    },
+    "global": {
+      "target": "moode",
+      "set_playlist": {
+        "command": "playlist",
+        "value": "NAS/HomeServer/JP",
+        "shuffled": true
+      },
+      "set_radio": {
+        "command": "radio",
+        "value": "RadioAnime24.pl"
+      }
     }
   },
   "2": {
-    "moode": {
-      "target": "shell",
-      "command": ["mpc clear", "mpc add \"http://91.232.4.33:7028/Stream1\"", "mpc play"]
-    }
-  },
-  "3": {
-    "global": {
+    "spotify": {
       "target": "spotify",
       "command": "playlist",
       "value": "Touhou Project",
       "shuffled": true
+    },
+    "global": {
+      "target": "moode",
+      "set_playlist": {
+        "command": "playlist",
+        "value": "NieR Soundtrack",
+        "shuffled": true
+      },
+      "set_radio": {
+        "command": "radio",
+        "value": "Touhou Radio"
+      }
+    }
+  },
+  "3": {
+    "spotify": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "Cowboy Bebop (Soundtrack Collection)",
+      "shuffled": true
+    },
+    "global": {
+      "target": "moode",
+      "set_playlist": {
+        "command": "playlist",
+        "value": "Fate Series OST",
+        "shuffled": true
+      },
+      "set_radio": {
+        "command": "radio",
+        "value": "Asia DREAM Radio - Japan"
+      }
     }
   },
   "4": {
+    "spotify": {
+      "target": "spotify",
+      "command": "album",
+      "value": "メガロボクス オリジナル・サウンドトラック",
+      "shuffled": true
+    },
     "global": {
       "target": "moode",
-      "command": "playlist",
-      "value": "Favorites"
+      "set_radio": {
+        "command": "radio",
+        "value": "J-Rock PowerPlay"
+      }
     }
   },
   "5": {
+    "spotify": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "Super Eurobeat Presents Initial D",
+      "shuffled": true
+    },
     "global": {
       "target": "moode",
-      "command": "radio",
-      "value": "RTR Radio"
+      "set_playlist": {
+        "command": "playlist",
+        "value": "Super Eurobeat",
+        "shuffled": true
+      },
+      "set_radio": {
+        "command": "radio",
+        "value": "J-Pop PowerPlay"
+      }
     }
   },
   "6": {
+    "spotify": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "Dragon Ball Covers",
+      "shuffled": true
+    },
     "global": {
       "target": "moode",
-      "command": "playlist",
-      "value": "NAS/HomeServer/Music",
-      "shuffled": true
+      "set_radio": {
+        "command": "radio",
+        "value": "J-Pop PowerPlay Kawaii"
+      }
     }
   },
   "7": {
-    "global": {
+    "spotify": {
       "target": "spotify",
       "command": "playlist",
-      "value": "Lord of the Rings Soundtrack",
-      "shuffled": false
+      "value": "Sabaton",
+      "shuffled": true
+    },
+    "global": {
+      "target": "moode",
+      "set_radio": {
+        "command": "radio",
+        "value": "Anime Blast Radio - The BLAST"
+      }
     }
   },
   "8": {
-
+    "spotify": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "Classic Rock",
+      "shuffled": true
+    },
+    "global": {
+      "target": "moode",
+      "command": "playlist",
+      "value": "NAS/HomeServer/Other",
+      "shuffled": true
+    }
   },
   "9": {
-
-  },
-  "0": {
-
+    "global": {
+      "target": "spotify",
+      "command": "playlist",
+      "value": "LOTR",
+      "shuffled": false
+    }
   },
   "source": {
     "moode": {
@@ -69,9 +157,23 @@
     }
   },
   "red": {
-    "moode": {
+    "global": {
       "target": "moode",
-      "command": "fav-current-item"
+      "command": "disconnect-renderer",
+      "set": "set_playlist"
+    }
+  },
+  "teal": {
+    "global": {
+      "target": "moode",
+      "command": "disconnect-renderer",
+      "set": "set_radio"
+    }
+  },
+  "green": {
+    "global": {
+      "target": "spotify",
+      "command": "transfer-playback"
     }
   }
 }
