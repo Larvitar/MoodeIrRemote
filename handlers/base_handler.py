@@ -1,13 +1,13 @@
-from abc import ABC
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
-class BaseActionHandler(ABC):
-
-    @classmethod
-    def instance(cls):
-        if cls._instance is None:
-            cls._instance = cls.__new__(cls)
-        return cls._instance
+class BaseActionHandler(metaclass=Singleton):
 
     def call(self, command_dict):
         return NotImplementedError
