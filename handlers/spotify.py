@@ -119,8 +119,8 @@ class SpotifyHandler(BaseActionHandler):
                 if MoodeHandler().get_active_renderer() == 'spotify':
                     break
 
-            if command == 'transfer-playback':
-                return
+        if command == 'transfer-playback':
+            return
 
         current = self.spotify.current_playback()
 
