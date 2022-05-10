@@ -22,8 +22,14 @@
   "4": {
     "global": {
       "target": "moode",
-      "command": "playlist",
-      "value": "Favorites"
+      "set_playlist": {
+        "command": "playlist",
+        "value": "Favorites"
+      },
+      "set_radio": {
+        "command": "radio",
+        "value": "BBC Radio"
+      }
     }
   },
   "5": {

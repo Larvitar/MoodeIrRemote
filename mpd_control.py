@@ -29,6 +29,7 @@ class Config(object):
         self.ir_gpio_pin: Optional[int] = None
         self.remotes: List[str] = []
         self.spotify: Dict[str, str] = {}
+        self.default_moode_set: str = "set_playlist"
         self.logging = {
             "level": "INFO",
             "file_level": "DEBUG",
@@ -69,6 +70,8 @@ class IrHandler(object):
                 'moode': MoodeHandler(),
                 'bluetooth': BluetoothHandler()
             }
+            self.handlers['moode'].default_set = self.config.default_moode_set
+            self.handlers['moode'].current_set = self.config.default_moode_set
 
         self.load_commands()
         self.executor = Executor(get_handler=self.get_handler,

@@ -88,6 +88,53 @@ Commands that can be run using Moode Web API. Supported commands are:
     
 **Note:** By default script will try to disconnect any external player (renderer) that is currently connected but if that fails (see <code>disconnect-renderer</code>) command execution will continue anyway.
 
+### Sets
+`Moode` support setting of `sets` of defined commands. Depending on what `set` is currently defined a different action can be performed.
+
+     "4": {                         <-- When button "4" is clicked
+       "global": {                  <-- In every context
+         "target": "moode",         <-- Trigger moode action
+         "set_playlist": {          <-- Only when "set_playlist" is active
+           "command": "playlist",
+           "value": "Favorites"
+         },
+         "set_radio": {             <-- Only when "set_radio" is active
+           "command": "radio",
+           "value": "BBC Radio"
+         }
+       }
+     },
+
+This can be used to expand the defined action list when you're running out of buttons on your remote. You still need to define a button dedicated to switching between `sets`.
+
+     "red": {
+       "global": {
+         "target": "moode",
+         "command": "disconnect-renderer",   <-- Disconnect any active renderer (spotify, bluetooth etc.)
+         "set": "set_playlist"               <-- Switch to set "set_playlist"
+       }
+     }
+
+You can either define different buttons for different `sets` or make one button cycle between all states you defined:
+
+     "red": {
+       "global": {
+         "target": "moode",         # set_playlist_1 -> set_playlist_2 -> set_radio -> set_playlist_1...
+         "set_playlist_1": {
+           "command": "disconnect-renderer",
+           "set": "set_playlist_2"
+         },
+         "set_playlist_2": {
+           "command": "disconnect-renderer",
+           "set": "set_radio"
+         },
+         "set_radio": {
+           "command": "disconnect-renderer",
+           "set": "set_playlist_1"
+         }
+       }
+     }
+
 ### Playlist
 Optional <code>shuffled</code> (random) setting available. Set to <code>true</code> to always start playing at random, <code>false</code> to always play in order. If not set script will read current <code>random</code> state from Moode.
 

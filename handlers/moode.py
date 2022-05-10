@@ -1,6 +1,6 @@
 from handlers.base_handler import BaseActionHandler
 from typing import Optional
-from time import sleep, time
+from time import sleep
 from logging import getLogger
 from urllib.parse import quote
 import json
@@ -32,6 +32,8 @@ class MoodeHandler(BaseActionHandler):
             'spotify': 'spotifysvc',
             'input': 'gpio_svc'     # maybe?
         }
+        self.default_set = ""
+        self.current_set = ""
 
     def get_active_renderer(self) -> Optional[str]:
         sys_config = self.read_cfg_system()
@@ -51,18 +53,32 @@ class MoodeHandler(BaseActionHandler):
         return json.loads(response.content.decode('utf-8'))
 
     def verify(self, command_dict):
-        assert 'command' in command_dict, f'\'command\' missing from {command_dict}'
-        assert isinstance(command_dict['command'], str), f'\'{command_dict["command"]}\' ' \
-                                                         f'type({type(command_dict["command"])}) value is not allowed!'
+        sets = [key for key in command_dict.keys() if key.startswith('set_')]
+        if sets:
+            commands = [command_dict[_set] for _set in sets]
+        else:
+            commands = [command_dict]
 
-        if command_dict['command'] in self.require_value:
-            assert 'value' in command_dict, f'\'value\' missing from {command_dict}'
-            assert isinstance(command_dict['value'], str) or isinstance(command_dict['value'], int), \
-                f'\'{command_dict["command"]}\' type({type(command_dict["command"])}) value is not allowed!'
+        for values in commands:
+            assert 'command' in values, f'\'command\' missing from {values}'
+            assert isinstance(values['command'], str), f'\'{values["command"]}\' ' \
+                                                       f'type({type(values["command"])}) value is not allowed!'
 
-    def disconnect_renderer(self, desired_state):
+            if values['command'] in self.require_value:
+                assert 'value' in values, f'\'value\' missing from {values}'
+                assert isinstance(values['value'], str) or isinstance(values['value'], int), \
+                    f'\'{values["command"]}\' type({type(values["command"])}) value is not allowed!'
+
+            if 'set' in values:
+                assert isinstance(values['set'], str) and values['set'].startswith('set_'), \
+                    f'"{values["set"]}" is not allowed. Set names must begin with "set_".'
+
+    def disconnect_renderer(self, desired_state, command_dict=None):
 
         active_renderer = self.get_active_renderer()
+        if command_dict and 'set' in command_dict:
+            self.current_set = command_dict['set']
+
         if active_renderer != desired_state and active_renderer in self.svc_map:
             # Make sure nothing else is playing
             response = self._send_command('POST', 'moode.php?cmd=disconnect-renderer',
@@ -93,10 +109,20 @@ class MoodeHandler(BaseActionHandler):
         return response
 
     def call(self, command_dict):
-        command = command_dict['command']
         current_status = self._read_mpd_status()
+        
+        if str(self.current_set) in command_dict:
+            values = command_dict[str(self.current_set)]
+        elif len([key for key in command_dict.keys() if key.startswith('set_')]) > 0 and 'command' not in command_dict:
+            # Current set does not match any of possible sets
+            sets = [key for key in command_dict.keys() if key.startswith('set_')]
+            values = command_dict[sets[0]]
+            self.current_set = sets[0]
+        else:
+            values = command_dict
 
-        self.disconnect_renderer(desired_state='moode')
+        command = values['command']
+        self.disconnect_renderer(desired_state='moode', command_dict=command_dict)
 
         # Worker commands
         if command == 'poweroff':
@@ -120,12 +146,10 @@ class MoodeHandler(BaseActionHandler):
             self._send_command('GET', '?cmd=previous')
         elif command == 'random':
             random = (int(current_status['random']) + 1) % 2
-            self._send_command('GET', 'index.php?cmd=random+{value}'.format(value=random))
+            self._send_command('GET', f'index.php?cmd=random+{random}')
         elif command == 'repeat':
             repeat = (int(current_status['repeat']) + 1) % 2
-            self._send_command('GET', 'index.php?cmd=repeat+{value}'.format(value=repeat))
-        elif command == 'disconnect-renderer':
-            self.disconnect_renderer(desired_state='moode')
+            self._send_command('GET', f'index.php?cmd=repeat+{repeat}')
         elif command == 'mute':
             self._send_command('GET', '?cmd=vol.sh+mute')
         elif command == 'fav-current-item':
@@ -140,21 +164,21 @@ class MoodeHandler(BaseActionHandler):
 
         # Commands with values
         elif command == 'vol_up':
-            self._send_command('GET', '?cmd=vol.sh+up+{value}'.format(value=command_dict['value']))
+            self._send_command('GET', '?cmd=vol.sh+up+{value}'.format(value=values['value']))
         elif command == 'vol_dn':
-            self._send_command('GET', '?cmd=vol.sh+dn+{value}'.format(value=command_dict['value']))
+            self._send_command('GET', '?cmd=vol.sh+dn+{value}'.format(value=values['value']))
         elif command == 'playlist':
-            if 'shuffled' in command_dict and command_dict['shuffled'] != bool(int(current_status['random'])):
+            if 'shuffled' in values and values['shuffled'] != bool(int(current_status['random'])):
                 self._send_command('GET', 'index.php?cmd=random+{value}'
-                                   .format(value=1 if command_dict['shuffled'] else 0))
-            self._send_command('POST', 'moode.php?cmd=clear_play_item', data={'path': command_dict['value']})
+                                   .format(value=1 if values['shuffled'] else 0))
+            self._send_command('POST', 'moode.php?cmd=clear_play_item', data={'path': values['value']})
         elif command == 'radio':
             self._send_command('POST', 'moode.php?cmd=clear_play_item',
-                               data={'path': f"RADIO/{command_dict['value']}.pls"})
+                               data={'path': f"RADIO/{values['value']}.pls"})
 
         elif command == 'custom':
             # Allow for any other command as defined by user
-            if 'data' in command_dict:
-                self._send_command('POST', command_dict['value'], data=command_dict['data'])
+            if 'data' in values:
+                self._send_command('POST', values['value'], data=values['data'])
             else:
-                self._send_command('GET', command_dict['value'])
+                self._send_command('GET', values['value'])
