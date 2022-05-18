@@ -9,7 +9,13 @@ Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR
 
 # Requirements
 
-1. pigpio
+1. Python3 and a few Python libraries - [requirements.txt](requirements.txt).
+2. An [IR receiver](#ir-setup) connected to one of GPIO ports and a remote controller matching this receiver.
+
+   or
+
+   [USB remote](#usb-remotes)
+3. pigpio *(IR remotes only)*
 
     pigpiod has to be running. Remember that if you're using a sound overlay (HiFiBerry boards etc.) you HAVE to run pigpio with <code>-t0</code> argument. See [pigpio/#152](https://github.com/joan2937/pigpio/issues/152) for more information.
     
@@ -26,9 +32,6 @@ Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR
         
     [pigpio/util](https://github.com/joan2937/pigpio/tree/master/util)
 
-2. An IR receiver connected to one of GPIO ports and a remote controller matching this receiver - [IR Setup](#ir-setup).
-
-3. Python3 and a few Python libraries - [requirements.txt](requirements.txt).
 
 # Installation
 
