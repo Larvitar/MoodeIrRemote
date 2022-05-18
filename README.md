@@ -13,16 +13,16 @@ Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR
 
     pigpiod has to be running. Remember that if you're using a sound overlay (HiFiBerry boards etc.) you HAVE to run pigpio with <code>-t0</code> argument. See [pigpio/#152](https://github.com/joan2937/pigpio/issues/152) for more information.
     
-        [Unit]
-        Description=Pigpio daemon
+       [Unit]
+       Description=pigpio daemon
         
-        [Service]
-        Type=forking
-        PIDFile=pigpio.pid
-        ExecStart=/usr/local/bin/pigpiod -t0
+       [Service]
+       Type=forking
+       PIDFile=pigpio.pid
+       ExecStart=/usr/bin/pigpiod -t0
         
-        [Install]
-        WantedBy=multi-user.target
+       [Install]
+       WantedBy=multi-user.target
         
     [pigpio/util](https://github.com/joan2937/pigpio/tree/master/util)
 
@@ -34,31 +34,31 @@ Simple project using [PiIR](https://github.com/ts1/PiIR) written to help with IR
 
 1. Clone this repository to your RPi. You might want to set <code>700</code> permission since Spotify credentials will be stored there.
 
-        git clone https://github.com/Larvitar/MoodeIrRemote
-        chmod -R 700 MoodeIrRemote
+       git clone https://github.com/Larvitar/MoodeIrRemote
+       chmod -R 700 MoodeIrRemote
     
 2. Install requirements:
         
-        sudo python3 -m pip install -r requirements.txt
+       sudo python3 -m pip install -r requirements.txt
 
 3. Create a systemd service <code>/etc/systemd/system/moode_ir_remote.service</code> :
 
-        [Unit]
-        Description=MoodeIrRemote
-        After=pigpiod.service
+       [Unit]
+       Description=MoodeIrRemote
+       After=pigpiod.service
         
-        [Service]
-        Type=Idle
-        ExecStart=/usr/bin/python3 /home/pi/MoodeIrRemote/mpd_control.py
+       [Service]
+       Type=Idle
+       ExecStart=/usr/bin/python3 /home/pi/MoodeIrRemote/mpd_control.py
         
-        [Install]
-        WantedBy=multi-user.target
+       [Install]
+       WantedBy=multi-user.target
         
 4. And start it:
 
-        sudo systemctl daemon-reload
-        sudo systemctl start moode_ir_remote
-        sudo systemctl enable moode_ir_remote
+       sudo systemctl daemon-reload
+       sudo systemctl start moode_ir_remote
+       sudo systemctl enable moode_ir_remote
         
     You can check if script started successfully by running <code>systemctl status moode_ir_remote</code>
     
@@ -69,12 +69,22 @@ What you need is an IR receiver (i.e. TSOP4836) and a remote working on the same
 
 You can test your setup in command line using [PiIR#command-line-usage](https://github.com/ts1/PiIR#command-line-usage).
 
+# USB Remotes
+Most standard USB remotes register themselves as a keyboard and send standard keyboard key commands. Basic media keys are defined in <code>usb_keyboard.json</code> config. If this does not work for you try registering a new USB remote using [remotes configuration](#remotes-configuration). 
+
+Remember to enable <code>enable_usb_remote</code> in config and add <code>usb_keyboard.json</code> to <code>remotes</code> list. Keep in mind that the script will register key events from ALL connected USB keyboards.
+
+**Note:** After connecting/disconnecting your remote restart of the script is required.
+
 # Configuration
 Configuration is stored in <code>config.json</code>
 
     {
       "remotes": ["default.json"],              # List of remote controllers that will be loaded on startup
       "ir_gpio_pin":  24,                       # GPIO pin where IR receiver is attached
+      "enable_ir_remote": true,                 # Whether to listen to IR events
+      "enable_usb_remote": false,               # Whether to listen to USB keyboard events or not
+      "keyboard_event_type": "up",              # up/down - generate event on key press (down) or key release (up)
       "logging": {
         "level": "INFO",                        # Level of console logs
         "file_level": "DEBUG",                  # Level of file logs
@@ -87,7 +97,8 @@ Configuration is stored in <code>config.json</code>
         "client_secret": "",
         "auth_server_listen_ip": "0.0.0.0",
         "auth_server_listen_port": 8080
-      }
+      },
+      "default_moode_set": "set_playlist"         # Default set
     }
         
 # Remotes configuration
