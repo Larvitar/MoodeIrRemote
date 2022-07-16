@@ -1,6 +1,9 @@
 {
   "remotes": ["default.json"],
   "ir_gpio_pin":  24,
+  "enable_ir_remote": true,
+  "enable_usb_remote": false,
+  "keyboard_event_type": "up",
   "logging": {
     "level": "INFO",
     "file_level": "DEBUG",

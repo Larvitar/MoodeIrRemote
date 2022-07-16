@@ -3,17 +3,18 @@ from handlers.shell import ShellCommandsHandler
 from handlers.spotify import SpotifyHandler
 from handlers.moode import MoodeHandler
 from handlers.bluetooth import BluetoothHandler
-from piir.io import receive
-from piir.decode import decode
+from input.basic_monitor import BasicEventMonitor
+from input.ir import IrMonitor
+from input.usb_remote import UsbRemoteMonitor
+from input.event_queue import Queue
 from pprint import pformat
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 from os import path, makedirs
-from copy import deepcopy
 from logging import getLogger, StreamHandler, Formatter, basicConfig
 from logging.handlers import TimedRotatingFileHandler
 from requests.exceptions import ConnectionError
 from time import sleep, time
-from executor import Executor
+from copy import deepcopy
 import json
 import sys
 import atexit
@@ -27,6 +28,9 @@ class Config(object):
 
     def __init__(self):
         self.ir_gpio_pin: Optional[int] = None
+        self.enable_ir_remote: bool = True
+        self.enable_usb_remote: bool = False
+        self.keyboard_event_type: str = 'up'
         self.remotes: List[str] = []
         self.spotify: Dict[str, str] = {}
         self.default_moode_set: str = "set_playlist"
@@ -44,7 +48,7 @@ class Config(object):
                 setattr(self, key, value)
 
 
-class IrHandler(object):
+class ControllerApp(object):
 
     def __init__(self, test_mode=False):
         self.test_mode = test_mode
@@ -74,15 +78,30 @@ class IrHandler(object):
             self.handlers['moode'].current_set = self.config.default_moode_set
 
         self.load_commands()
-        self.executor = Executor(get_handler=self.get_handler,
-                                 get_renderer=MoodeHandler().get_active_renderer)
 
-        self._stop()
+        self.event_queue = Queue()
+        self._load_input_handlers()
 
-    def _stop(self):
-        atexit.register(self.executor.stop)
+        atexit.register(self.stop)
+
+    def _load_input_handlers(self):
+        self.input_handlers: List[BasicEventMonitor] = []
+        if self.config.enable_ir_remote:
+            self.input_handlers.append(IrMonitor(self.event_queue, self.config.ir_gpio_pin))
+        if self.config.enable_usb_remote:
+            self.input_handlers.append(UsbRemoteMonitor(self.event_queue, self.config.keyboard_event_type))
+
+        for _ih in self.input_handlers:
+            _ih.start()
+
+    def stop(self):
+        if self.event_queue:
+            self.event_queue.stop()
+        for _ih in self.input_handlers:
+            _ih.stop()
+            _ih.join()
         if 'spotify' in self.handlers:
-            atexit.register(self.handlers['spotify'].stop)
+            self.handlers['spotify'].stop()
 
     def get_handler(self, handler_name):
         if handler_name in self.handlers:
@@ -177,54 +196,14 @@ class IrHandler(object):
         else:
             self.logger.warning('custom.json file not found!')
 
-    @staticmethod
-    def _parse_code(code):
-        """
-        Parse received code to a json compatible format
-
-        :param code: list
-        :return: dict
-        """
-
-        if not code:
-            return
-
-        if isinstance(code, list):
-            code = code[0]
-
-        if isinstance(code, dict):
-            if not ({'data', 'preamble', 'postamble'} < set(code.keys())):
-                # Required fields
-                return
-
-            if not isinstance(code['data'], bytes):
-                return
-
-            code['data'] = code['data'].hex()
-            keys_to_remove = ['gap', 'timebase']
-            for key in keys_to_remove:
-                if key in code:
-                    del code[key]
-
-            for key, value in code.items():
-                if isinstance(value, set) or isinstance(value, tuple):
-                    code[key] = list(value)
-
-            return code
-
-    def _record_key(self):
-        while True:
-            code = decode(receive(self.config.ir_gpio_pin))
-            parsed = self._parse_code(code)
-            if parsed:
-                self.logger.debug(f'Received code {parsed}')
-                return parsed
-
-    def _record(self):
+    def record_key(self) -> list:
         codes = []
         return_codes = []
         while True:
-            code = self._record_key()
+            code = self.event_queue.dequeue()
+            if code is None:
+                continue
+
             if codes and code == codes[-1]:
                 # Same code twice in a row
                 return [deepcopy(code)]
@@ -252,7 +231,7 @@ class IrHandler(object):
                     action = input(f'Button "{key_name}" \t(recorded: {recorded_len}) '
                                    f'[(R)ecord / (D)elete last / (C)lear all / (N)ext / (E)nd]: ')
                     if action.lower() == 'r':
-                        codes = self._record()
+                        codes = self.record_key()
 
                         if key_name not in self.keymap:
                             self.keymap[key_name] = list()
@@ -287,6 +266,14 @@ class IrHandler(object):
 
             self.load_keymap()
 
+    def _execute(self, element: Tuple):
+        (func, args) = element
+        self.logger.debug(f"Running command {args}")
+        try:
+            func(*args)
+        except Exception as e:
+            self.logger.exception(e)
+
     def monitor(self, file_name=None):
         self.load_keymap(file_name=file_name)
 
@@ -303,8 +290,7 @@ class IrHandler(object):
 
         self.logger.info('Monitoring started' + (f' (test mode)' if self.test_mode else ''))
         while True:
-            code = self._record_key()
-
+            code = self.event_queue.dequeue()
             try:
                 key_name = None
                 for _key, _codes in self.keymap.items():
@@ -322,7 +308,24 @@ class IrHandler(object):
             except KeyError:
                 continue
 
-            self.executor.enqueue(command)
+            if isinstance(command, tuple):
+                self._execute(command)
+            elif isinstance(command, dict):
+                renderer = MoodeHandler().get_active_renderer()
+                if renderer in command.keys():
+                    commands = command[renderer]
+                elif 'global' in command.keys():
+                    commands = command['global']
+                else:
+                    continue
+
+                if not isinstance(commands, list):
+                    commands = [commands]
+
+                for command_dict in commands:
+                    handler: BaseActionHandler = self.get_handler(command_dict['target'])
+                    if handler:
+                        self._execute((handler.call, [command_dict]))
 
 
 if __name__ == '__main__':
@@ -330,7 +333,7 @@ if __name__ == '__main__':
         print('')  # TODO
 
     _test_mode = 'test' in sys.argv[1:] or 'setup' in sys.argv[1:]
-    ir_handler = IrHandler(test_mode=_test_mode)
+    controller_app = ControllerApp(test_mode=_test_mode)
 
     _file_name = 'default.json'
     for arg in sys.argv[1:]:
@@ -339,11 +342,15 @@ if __name__ == '__main__':
             break
 
     if 'setup' in sys.argv[1:]:
-        ir_handler.setup(_file_name)
+        controller_app.setup(_file_name)
+        controller_app.stop()
         sys.exit()
 
     if _test_mode:
-        ir_handler.monitor(_file_name)
-    else:
-        ir_handler.verify_commands()
-        ir_handler.monitor()
+        controller_app.monitor(_file_name)
+        controller_app.stop()
+        sys.exit()
+
+    controller_app.verify_commands()
+    controller_app.monitor()
+    controller_app.stop()
