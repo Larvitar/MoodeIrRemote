@@ -288,7 +288,7 @@ class ControllerApp(object):
         if diff:
             self.logger.info(f'Some keys are missing from setup! \n\t{pformat(diff)}')
 
-        self.logger.info('Monitoring started' + (f' (test mode)' if self.test_mode else ''))
+        self.logger.info('Monitoring started' + (' (test mode)' if self.test_mode else ''))
         while True:
             code = self.event_queue.dequeue()
             try:

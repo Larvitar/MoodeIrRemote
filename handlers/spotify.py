@@ -3,6 +3,7 @@ from handlers.spotify_auth import AuthServer
 from handlers.moode import MoodeHandler
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
+from requests.exceptions import ConnectionError
 from time import time, sleep
 from typing import Dict
 from logging import getLogger
@@ -72,7 +73,7 @@ class SpotifyHandler(BaseActionHandler):
         try:
             self.device_name = MoodeHandler().read_cfg_system()['spotifyname']
             self.device_id = self._get_id(self.device_name)
-        except TimeoutError as e:
+        except (TimeoutError, ConnectionError) as e:
             self.logger.exception(e)
 
         self.spotify_auth.initiated = True

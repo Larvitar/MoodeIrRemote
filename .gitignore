@@ -1,3 +1,4 @@
 /.cache
 /commands/custom.json
 logs
+__pycache__/
